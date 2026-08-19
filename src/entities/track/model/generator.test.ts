@@ -17,11 +17,10 @@ describe("generateTileTracks", () => {
     expect(generateTileTracks(0, 0)).toEqual(TRACKS);
   });
 
-  it("타일당 9~14곡을 만든다", () => {
+  it("모든 타일을 같은 12곡의 카드 그리드로 채운다", () => {
     for (const [k, m] of [[1, 1], [-3, 2], [5, -7]] as const) {
       const n = generateTileTracks(k, m).length;
-      expect(n).toBeGreaterThanOrEqual(9);
-      expect(n).toBeLessThanOrEqual(14);
+      expect(n).toBe(TRACKS.length);
     }
   });
 

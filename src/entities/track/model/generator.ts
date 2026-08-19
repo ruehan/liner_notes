@@ -84,7 +84,7 @@ export function generateTileTracks(k: number, m: number): Track[] {
   if (isHomeTile(k, m)) return TRACKS;
 
   const rng = createRng(hashKey(`tile:${k},${m}`));
-  const count = 9 + Math.floor(rng() * 6);
+  const count = TRACKS.length;
   const tracks: Track[] = [];
 
   for (let i = 0; i < count; i++) {

@@ -1,8 +1,8 @@
 .track-card {
   position: absolute;
-  width: 236px;
   display: flex;
   flex-direction: column;
+  container-type: size;
   background: var(--card);
   border: 1px solid var(--line-soft);
   border-radius: var(--r-cell);
@@ -36,7 +36,8 @@
 
 .track-card__artwrap {
   position: relative;
-  height: 196px;
+  height: 57%;
+  min-height: 136px;
   flex: none;
 }
 
@@ -197,15 +198,49 @@
 }
 
 @media (max-width: 760px) {
-  .track-card {
-    width: 172px;
-  }
-
   .track-card__artwrap {
-    height: 148px;
+    min-height: 116px;
   }
 
   .track-card__title {
     font-size: 16px;
+  }
+}
+
+@container (max-height: 250px) {
+  .track-card__artwrap {
+    height: 54%;
+    min-height: 106px;
+  }
+
+  .track-card__tape {
+    left: 8px;
+    top: 8px;
+    padding: 2px 7px 3px;
+  }
+
+  .track-card__ordinal {
+    right: 8px;
+    bottom: 8px;
+  }
+
+  .track-card__head {
+    padding: 8px 10px 4px;
+  }
+
+  .track-card__title {
+    margin-top: 2px;
+    font-size: 16px;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+
+  .track-card__byline {
+    margin-top: 3px;
+  }
+
+  .track-card__foot {
+    padding: 4px 10px 7px;
   }
 }

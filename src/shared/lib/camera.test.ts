@@ -66,6 +66,26 @@ describe("tileOffsets", () => {
       expect(offs.length).toBeGreaterThanOrEqual(1);
     }
   });
+
+  it("타일이 화면보다 작아도 뷰포트 전체를 빈틈없이 덮는다", () => {
+    const compactWorld = { width: 1320, height: 900 };
+    const wideViewport = { width: 2048, height: 1200 };
+    const cam = { x: -826, y: -450 };
+    const offs = tileOffsets(cam, wideViewport, compactWorld);
+    const xs = [...new Set(offs.map((offset) => offset.x))].sort((a, b) => a - b);
+    const ys = [...new Set(offs.map((offset) => offset.y))].sort((a, b) => a - b);
+
+    expect(xs).toEqual([0, 1320, 2640]);
+    expect(ys).toEqual([0, 900]);
+    expect(xs[0]).toBeLessThanOrEqual(-cam.x);
+    expect(xs.at(-1)! + compactWorld.width).toBeGreaterThanOrEqual(
+      -cam.x + wideViewport.width,
+    );
+    expect(ys[0]).toBeLessThanOrEqual(-cam.y);
+    expect(ys.at(-1)! + compactWorld.height).toBeGreaterThanOrEqual(
+      -cam.y + wideViewport.height,
+    );
+  });
 });
 
 describe("nearestCopy", () => {

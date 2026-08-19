@@ -5,13 +5,11 @@ import {
   tileCatalog,
   type Track,
 } from "@/entities/track";
-import { hashKey } from "@/entities/track/model/generator";
 import {
-  CELL_SIZE,
   WORLD,
-  generateSpots,
+  generateMosaicSpots,
   type Point,
-  type Spot,
+  type MosaicSpot,
 } from "@/shared/lib";
 import { Wall, type WallHandle } from "@/widgets/wall";
 import { Hud } from "@/widgets/hud";
@@ -41,14 +39,14 @@ interface HoverEntry {
   catalog: string;
 }
 
-const spotCache = new Map<string, Spot[]>();
+const spotCache = new Map<string, MosaicSpot[]>();
 
-function tileSpots(k: number, m: number): Spot[] {
+function tileSpots(k: number, m: number): MosaicSpot[] {
   const key = `${k},${m}`;
   let spots = spotCache.get(key);
   if (!spots) {
     const tracks = generateTileTracks(k, m);
-    spots = generateSpots(tracks.length, hashKey(`spots:${key}`));
+    spots = generateMosaicSpots(tracks.length);
     spotCache.set(key, spots);
   }
   return spots;
@@ -202,8 +200,8 @@ export function MainPage() {
     hotTimer.current = setTimeout(() => setHotKey(null), 1600);
     setHoverEntry({ track, catalog: tileCatalog(c.k, c.m, c.i) });
     wallRef.current?.jumpTo({
-      x: c.k * WORLD.width + spots[c.i].x + CELL_SIZE / 2,
-      y: c.m * WORLD.height + spots[c.i].y + CELL_SIZE / 2,
+      x: c.k * WORLD.width + spots[c.i].x + spots[c.i].width / 2,
+      y: c.m * WORLD.height + spots[c.i].y + spots[c.i].height / 2,
     });
   }, [tiles, filter, openEntry]);
 
@@ -247,7 +245,8 @@ export function MainPage() {
             style={{
               left: spots[i].x,
               top: spots[i].y,
-              transform: `rotate(${spots[i].rot}deg)`,
+              width: spots[i].width,
+              height: spots[i].height,
             }}
             onOpen={() => {
               const nav: OpenEntry[] = tracks
