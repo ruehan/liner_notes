@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
 import "./boot.css";
 
-const WORD = "lexicon";
+const WORD = "liner notes";
 
 interface Props {
   onDone: () => void;

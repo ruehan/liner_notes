@@ -1,5 +1,13 @@
 # 작업 로그
 
+## 2026-08-19 — 프로젝트 이름 변경: liner notes
+
+- 브랜치: feat/archive-redesign
+- 한 일: night lexicon → **liner notes** 개명. 워드마크·부팅·타이틀·package 반영,
+  카탈로그 번호 접두 NLX- → LNR-
+- 검증: verify.sh 통과 — 테스트 32개, typecheck/lint/build 클린
+- 관련 결정: docs/decisions/0003-프로젝트-이름-liner-notes.md
+
 ## 2026-08-19 — 디자인 전환: Archive Room (음악 아카이브 컨셉)
 
 - 브랜치: feat/archive-redesign

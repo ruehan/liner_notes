@@ -9,7 +9,7 @@ export const GENRES: Record<GenreId, GenreTheme> = {
 export const GENRE_ORDER: GenreId[] = ["ambient", "jazz", "electronic"];
 
 export function catalogNo(index: number): string {
-  return `NLX-${String(index + 1).padStart(3, "0")}`;
+  return `LNR-${String(index + 1).padStart(3, "0")}`;
 }
 
 export const TRACKS: Track[] = [

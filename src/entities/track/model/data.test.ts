@@ -39,8 +39,8 @@ describe("track 데이터 무결성", () => {
     }
   });
 
-  it("카탈로그 번호는 NLX-001 형태다", () => {
-    expect(catalogNo(0)).toBe("NLX-001");
-    expect(catalogNo(11)).toBe("NLX-012");
+  it("카탈로그 번호는 LNR-001 형태다", () => {
+    expect(catalogNo(0)).toBe("LNR-001");
+    expect(catalogNo(11)).toBe("LNR-012");
   });
 });

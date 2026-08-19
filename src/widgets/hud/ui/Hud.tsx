@@ -14,7 +14,7 @@ export function Hud({ filters, onAbout }: Props) {
           ♪
         </span>
         <span className="logo__text">
-          <span className="logo__mark">lexicon</span>
+          <span className="logo__mark">liner notes</span>
           <span className="logo__sub">a personal music archive</span>
         </span>
       </a>
