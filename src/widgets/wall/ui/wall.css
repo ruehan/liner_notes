@@ -1,4 +1,6 @@
 .wall {
+  --wall-light-x: 50vw;
+  --wall-light-y: 50vh;
   position: fixed;
   inset: 0;
   cursor: grab;
@@ -10,8 +12,27 @@
   background-size: 26px 26px;
 }
 
+.wall::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  z-index: 2;
+  pointer-events: none;
+  background: radial-gradient(
+    420px circle at var(--wall-light-x) var(--wall-light-y),
+    rgba(255, 252, 239, 0.28),
+    transparent 72%
+  );
+  mix-blend-mode: soft-light;
+  transition: opacity var(--dur-2) var(--ease-out);
+}
+
 .wall.is-dragging {
   cursor: grabbing;
+}
+
+.wall.is-dragging::after {
+  opacity: 0.4;
 }
 
 .wall__world {
@@ -20,10 +41,17 @@
   left: 0;
   transform-origin: 0 0;
   will-change: transform;
+  z-index: 1;
 }
 
 .wall__tile {
   position: absolute;
   top: 0;
   left: 0;
+}
+
+@media (hover: none), (prefers-reduced-motion: reduce) {
+  .wall::after {
+    display: none;
+  }
 }

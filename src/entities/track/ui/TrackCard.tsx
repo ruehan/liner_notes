@@ -46,7 +46,24 @@ export function TrackCard({
         }
       }}
       onMouseEnter={onEnter}
-      onMouseLeave={onLeave}
+      onMouseMove={(event) => {
+        const card = event.currentTarget;
+        const bounds = card.getBoundingClientRect();
+        const x = (event.clientX - bounds.left) / bounds.width;
+        const y = (event.clientY - bounds.top) / bounds.height;
+
+        card.style.setProperty("--tilt-x", `${(0.5 - y) * 3.5}deg`);
+        card.style.setProperty("--tilt-y", `${(x - 0.5) * 4.5}deg`);
+        card.style.setProperty("--shine-x", `${x * 100}%`);
+        card.style.setProperty("--shine-y", `${y * 100}%`);
+      }}
+      onMouseLeave={(event) => {
+        event.currentTarget.style.removeProperty("--tilt-x");
+        event.currentTarget.style.removeProperty("--tilt-y");
+        event.currentTarget.style.removeProperty("--shine-x");
+        event.currentTarget.style.removeProperty("--shine-y");
+        onLeave();
+      }}
     >
       <div className="track-card__artwrap">
         <CoverArt track={track} className="track-card__art" />

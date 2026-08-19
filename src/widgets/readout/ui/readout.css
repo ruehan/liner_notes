@@ -4,6 +4,12 @@
   bottom: var(--hud-pad);
   z-index: 40;
   max-width: min(48ch, 62vw);
+  padding: 14px 18px 15px;
+  background: color-mix(in srgb, var(--card) 94%, transparent);
+  border: 1px solid var(--line);
+  border-radius: var(--r-ui);
+  box-shadow: var(--shadow-paper);
+  backdrop-filter: blur(12px);
   pointer-events: none;
   opacity: 0;
   transform: translateY(8px);

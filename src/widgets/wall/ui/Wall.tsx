@@ -119,6 +119,10 @@ export const Wall = forwardRef<WallHandle, Props>(function Wall(
   };
 
   const onPointerMove = (e: ReactPointerEvent<HTMLDivElement>) => {
+    if (e.pointerType === "mouse") {
+      e.currentTarget.style.setProperty("--wall-light-x", `${e.clientX}px`);
+      e.currentTarget.style.setProperty("--wall-light-y", `${e.clientY}px`);
+    }
     const d = drag.current;
     if (!d.active) return;
     const dx = e.clientX - d.sx;

@@ -155,8 +155,8 @@
 - **색**: 어두운 벽 대신 **오래된 종이** 배경(`#e9e1cd`), 벽면은 그보다 한 톤 어두운
   카드보드(`#e2d8c0`)에 점 그리드. 텍스트는 진한 갈색 잉크(`#221c12`).
   단일 액센트는 **도장 레드**(`#c8372d`) — 카탈로그 번호, 도장, 진행 바에만 사용.
-- **서체**: 디스플레이 **Fraunces**(세기말 카탈로그의 세리프), UI **Space Grotesk**,
-  기록 메타(카탈로그 번호·연도·레이블)는 **Space Mono**. 서체 3역할 분리.
+- **서체**: **Gmarket Sans** 단일 패밀리. Light·Medium·Bold의 세 굵기를 제목,
+  UI, 기록 메타에 일관되게 사용한다.
 - **아카이브 모티프**: 카탈로그 번호(`LNR-001`), 장르 테이프 칩, 도장(스탬프),
   점선 구분, 카드 위 마스킹 테이프. 발음 기호(`/ˈdʒæz/`)는 사전 모티프로 유지.
 - **카드(셀)**: 색 면 대신 **목록 카드** — 절차적 커버아트(SVG 패턴) +
@@ -235,9 +235,9 @@ HUD index 버튼의 카운트는 인덱스 항목 수.
   --jazz-bg: #a8622d;       --jazz-ink: #f9efe2;
   --electronic-bg: #5c7045; --electronic-ink: #eff3e6;
 
-  --display: "Fraunces Variable", Georgia, serif;
-  --sans: "Space Grotesk Variable", Helvetica, Arial, sans-serif;
-  --mono: "Space Mono", ui-monospace, "SF Mono", Menlo, monospace;
+  --display: "Gmarket Sans", "Apple SD Gothic Neo", "Noto Sans KR", sans-serif;
+  --sans: "Gmarket Sans", "Apple SD Gothic Neo", "Noto Sans KR", sans-serif;
+  --mono: "Gmarket Sans", "Apple SD Gothic Neo", "Noto Sans KR", sans-serif;
 
   --t-micro: clamp(9.5px, .62vw, 11.5px);
   --t-label: clamp(11px, .8vw, 13px);
@@ -259,7 +259,7 @@ HUD index 버튼의 카운트는 인덱스 항목 수.
 ```
 
 메타 규칙: 카탈로그 번호·연도·레이블 등 기록 메타는 항상 `--mono` + 대문자 자간.
-곡 제목만 `--display`(Fraunces). 도장 레드는 번호·강조에만 쓰고 면(面)으로는 쓰지 않는다.
+곡 제목은 `--display`의 Bold를 사용한다. 도장 레드는 번호·강조에만 쓰고 면(面)으로는 쓰지 않는다.
 
 프로토타입: `prototype/index.html` — 벽·HUD·필터·readout·상세 시트·shuffle·부팅 구현.
 실제 구현: `src/` (Vite + React + FSD, 구조 결정은 `docs/decisions/0001`).

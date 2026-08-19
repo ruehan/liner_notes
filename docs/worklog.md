@@ -1,5 +1,11 @@
 # 작업 로그
 
+## 2026-08-19 — Gmarket Sans 전환
+
+- 한 일: 기존 Fraunces·Space Grotesk·Space Mono를 Gmarket Sans Light·Medium·Bold로
+  교체. 공식 배포 TTF를 WOFF2로 변환해 로컬 셀프호스팅하고, 모든 서체 토큰을 단일
+  패밀리로 통일.
+
 ## 2026-08-19 — 카탈로그 인덱스 · 수집(큐레이션) · About
 
 - 브랜치: feat/archive-redesign

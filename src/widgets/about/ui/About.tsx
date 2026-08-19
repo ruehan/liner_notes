@@ -65,7 +65,7 @@ export function About({ open, onClose }: Props) {
         </ul>
 
         <div className="about__foot">
-          <span>Fraunces · Space Grotesk · Space Mono</span>
+          <span>Gmarket Sans · Light / Medium / Bold</span>
           <button type="button" className="about__back" onClick={onClose}>
             ← 벽으로 돌아가기
           </button>
