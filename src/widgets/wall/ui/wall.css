@@ -1,0 +1,18 @@
+.wall {
+  position: fixed;
+  inset: 0;
+  cursor: grab;
+  background: var(--bg-deep);
+}
+
+.wall.is-dragging {
+  cursor: grabbing;
+}
+
+.wall__world {
+  position: absolute;
+  top: 0;
+  left: 0;
+  transform-origin: 0 0;
+  will-change: transform;
+}

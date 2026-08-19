@@ -1,0 +1,29 @@
+.main-page__vignette {
+  position: fixed;
+  inset: 0;
+  z-index: 35;
+  pointer-events: none;
+  background:
+    linear-gradient(to bottom, rgba(5, 7, 15, 0.69), rgba(5, 7, 15, 0) 20%),
+    linear-gradient(to top, rgba(5, 7, 15, 0.69), rgba(5, 7, 15, 0) 20%),
+    radial-gradient(130% 95% at 50% 50%, rgba(5, 7, 15, 0) 42%, rgba(5, 7, 15, 0.8));
+}
+
+.main-page__hint {
+  position: fixed;
+  left: 50%;
+  bottom: calc(var(--hud-pad) + 2px);
+  transform: translateX(-50%);
+  z-index: 36;
+  font-family: var(--mono);
+  font-size: var(--t-label);
+  letter-spacing: var(--tr-wider);
+  text-transform: uppercase;
+  color: var(--fg-faint);
+  pointer-events: none;
+  transition: opacity var(--dur-4) var(--ease-out);
+}
+
+.main-page__hint.is-gone {
+  opacity: 0;
+}
