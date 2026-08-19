@@ -223,6 +223,7 @@
 ```
 
 프로토타입: `prototype/index.html` — 벽·HUD·필터·readout·상세 시트·shuffle·부팅 구현.
+실제 구현: `src/` (Vite + React + FSD, 구조 결정은 `docs/decisions/0001`).
 
 ---
 
