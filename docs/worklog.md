@@ -1,5 +1,13 @@
 # 작업 로그
 
+## 2026-08-19 — 무한 패닝 벽 (토러스 랩)
+
+- 브랜치: feat/archive-redesign
+- 한 일: 카메라 클램프 제거, 월드를 타일(`tileOffsets`)로 반복 렌더링해
+  어느 방향으로든 끝없이 이동하는 벽 구현. 셔플 점프는 최근접 복사본으로.
+  중복 타일 복제본은 aria-hidden 처리.
+- 검증: verify.sh 통과 — 테스트 34개, typecheck/lint/build 클린
+
 ## 2026-08-19 — 프로젝트 이름 변경: liner notes
 
 - 브랜치: feat/archive-redesign

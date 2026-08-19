@@ -1,7 +1,9 @@
 export { createRng, LCG_SEED, type Rng } from "./rng";
 export {
-  clampCamera,
   centerCameraOn,
+  mod,
+  tileOffsets,
+  nearestCopy,
   type Point,
   type Size,
 } from "./camera";

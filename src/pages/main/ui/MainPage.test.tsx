@@ -3,11 +3,15 @@ import { fireEvent, render, screen, waitFor } from "@testing-library/react";
 import { TRACKS } from "@/entities/track";
 import { MainPage } from "./MainPage";
 
+function firstCard(title: string, artist: string) {
+  return screen.getAllByLabelText(`${title} — ${artist}`)[0];
+}
+
 describe("MainPage", () => {
   it("모든 트랙 카드와 필터 탭을 렌더한다", () => {
     render(<MainPage />);
     for (const t of TRACKS) {
-      expect(screen.getByLabelText(`${t.title} — ${t.artist}`)).toBeInTheDocument();
+      expect(firstCard(t.title, t.artist)).toBeInTheDocument();
     }
     expect(screen.getByRole("button", { name: /^all/ })).toHaveAttribute(
       "aria-pressed",
@@ -19,15 +23,15 @@ describe("MainPage", () => {
     render(<MainPage />);
     fireEvent.click(screen.getByRole("button", { name: /^jazz/ }));
 
-    const jazzCard = screen.getByLabelText("Blue in Green — Bill Evans Trio");
-    const otherCard = screen.getByLabelText("Xtal — Aphex Twin");
+    const jazzCard = firstCard("Blue in Green", "Bill Evans Trio");
+    const otherCard = firstCard("Xtal", "Aphex Twin");
     expect(jazzCard.className).not.toContain("is-hidden");
     expect(otherCard.className).toContain("is-hidden");
   });
 
   it("카드를 클릭하면 상세 시트가 열리고 Escape로 닫힌다", async () => {
     render(<MainPage />);
-    fireEvent.click(screen.getByLabelText("Blue in Green — Bill Evans Trio"));
+    fireEvent.click(firstCard("Blue in Green", "Bill Evans Trio"));
 
     const dialog = await screen.findByRole("dialog");
     expect(dialog).toHaveTextContent("Blue in Green");
