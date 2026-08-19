@@ -1,5 +1,16 @@
 # 작업 로그
 
+## 2026-08-19 — 무한 항목: 절차 생성 트랙으로 벽 채우기
+
+- 브랜치: feat/archive-redesign
+- 한 일: 벽의 무한 패닝 위에 항목도 끝없이 나오도록 절차 생성 트랙 도입.
+  홈 타일 (0,0)=실제 선곡, 그 외 타일=시드 기반 생성(곡·아티스트·앨범·정의문).
+  카탈로그 번호에 타일 좌표 인코딩. TrackCard를 catalog/ordinal 받는 presentational로
+  전환, Wall은 renderTile(k,m) 콜백으로 타일별 콘텐츠 렌더.
+  tileOffsets 부호 버그(카메라 방향 반전) 수정.
+- 검증: verify.sh 통과 — 테스트 42개, typecheck/lint/build 클린
+- 관련 결정: docs/decisions/0004-무한-아카이브-절차-생성-트랙.md
+
 ## 2026-08-19 — 무한 패닝 벽 (토러스 랩)
 
 - 브랜치: feat/archive-redesign

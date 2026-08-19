@@ -1,24 +1,27 @@
 import { useEffect, useRef, useState } from "react";
-import { GENRES, catalogNo, CoverArt, type Track } from "@/entities/track";
+import { GENRES, CoverArt, type Track } from "@/entities/track";
 import "./detail.css";
 
+export interface OpenEntry {
+  track: Track;
+  catalog: string;
+  ordinal: number;
+}
+
 interface Props {
-  track: Track | null;
-  entryNo: number;
+  entry: OpenEntry | null;
   onClose: () => void;
 }
 
-export function DetailSheet({ track, entryNo, onClose }: Props) {
-  const [shown, setShown] = useState<Track | null>(null);
-  const [entry, setEntry] = useState(0);
+export function DetailSheet({ entry, onClose }: Props) {
+  const [shown, setShown] = useState<OpenEntry | null>(null);
   const [open, setOpen] = useState(false);
   const closing = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   useEffect(() => {
-    if (track) {
+    if (entry) {
       if (closing.current) clearTimeout(closing.current);
-      setShown(track);
-      setEntry(entryNo);
+      setShown(entry);
       const raf = requestAnimationFrame(() =>
         requestAnimationFrame(() => setOpen(true)),
       );
@@ -31,11 +34,12 @@ export function DetailSheet({ track, entryNo, onClose }: Props) {
         if (closing.current) clearTimeout(closing.current);
       };
     }
-  }, [track, entryNo]); // eslint-disable-line react-hooks/exhaustive-deps
+  }, [entry]); // eslint-disable-line react-hooks/exhaustive-deps
 
   if (!shown) return null;
 
-  const theme = GENRES[shown.genre];
+  const { track, catalog, ordinal } = shown;
+  const theme = GENRES[track.genre];
 
   return (
     <div className={`detail${open ? " is-open" : ""}`}>
@@ -59,32 +63,35 @@ export function DetailSheet({ track, entryNo, onClose }: Props) {
         </button>
 
         <div className="detail__stamp" aria-hidden="true">
-          <span>{catalogNo(entry)}</span>
-          <span>filed {shown.year}</span>
+          <span>{catalog}</span>
+          <span>filed {track.year}</span>
         </div>
 
         <section
           className="detail__card"
           role="dialog"
           aria-modal="true"
-          aria-label={`${shown.title} 상세`}
+          aria-label={`${track.title} 상세`}
         >
           <div className="detail__body">
             <p className="detail__head">
-              entry no.{String(entry + 1).padStart(2, "0")}
-              <span className="detail__head-tape" style={{ background: theme.bg, color: theme.ink }}>
-                {shown.genre}
+              entry no.{String(ordinal).padStart(2, "0")}
+              <span
+                className="detail__head-tape"
+                style={{ background: theme.bg, color: theme.ink }}
+              >
+                {track.genre}
               </span>
             </p>
-            <h1 className="detail__title">{shown.title}</h1>
-            <p className="detail__artist">{shown.artist}</p>
+            <h1 className="detail__title">{track.title}</h1>
+            <p className="detail__artist">{track.artist}</p>
             <p className="detail__phon">{theme.phon}</p>
             <p className="detail__def">
               <b>n.</b>
-              <span>{shown.definition}</span>
+              <span>{track.definition}</span>
             </p>
             <div className="detail__tags">
-              {shown.tags.map((t, i) => (
+              {track.tags.map((t, i) => (
                 <span
                   key={t}
                   className="detail__tag"
@@ -97,19 +104,19 @@ export function DetailSheet({ track, entryNo, onClose }: Props) {
             <dl className="detail__meta">
               <div>
                 <dt>album</dt>
-                <dd>{shown.album}</dd>
+                <dd>{track.album}</dd>
               </div>
               <div>
                 <dt>label</dt>
-                <dd>{shown.label}</dd>
+                <dd>{track.label}</dd>
               </div>
               <div>
                 <dt>year</dt>
-                <dd>{shown.year}</dd>
+                <dd>{track.year}</dd>
               </div>
               <div>
                 <dt>length</dt>
-                <dd>{shown.length}</dd>
+                <dd>{track.length}</dd>
               </div>
             </dl>
             <button type="button" className="detail__play" title="곧 구현">
@@ -122,16 +129,16 @@ export function DetailSheet({ track, entryNo, onClose }: Props) {
 
           <div className="detail__art">
             <div className="detail__frame detail__frame--back" aria-hidden="true">
-              <CoverArt track={shown} />
+              <CoverArt track={track} />
             </div>
             <div className="detail__frame">
-              <CoverArt track={shown} />
+              <CoverArt track={track} />
             </div>
-            <span className="detail__frame-no">{catalogNo(entry)}</span>
+            <span className="detail__frame-no">{catalog}</span>
           </div>
 
           <div className="detail__entry-no" aria-hidden="true">
-            {String(entry + 1).padStart(2, "0")}
+            {String(ordinal).padStart(2, "0")}
           </div>
         </section>
       </div>

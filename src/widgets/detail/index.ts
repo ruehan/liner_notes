@@ -1,1 +1,1 @@
-export { DetailSheet } from "./ui/DetailSheet";
+export { DetailSheet, type OpenEntry } from "./ui/DetailSheet";

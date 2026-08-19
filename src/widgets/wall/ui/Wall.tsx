@@ -24,7 +24,8 @@ export interface WallHandle {
 }
 
 interface Props {
-  children: ReactNode;
+  renderTile: (k: number, m: number) => ReactNode;
+  onTilesChange?: (tiles: Point[]) => void;
   onInteract?: () => void;
 }
 
@@ -40,7 +41,7 @@ function offsetsKey(offsets: Point[]): string {
 }
 
 export const Wall = forwardRef<WallHandle, Props>(function Wall(
-  { children, onInteract },
+  { renderTile, onTilesChange, onInteract },
   ref,
 ) {
   const containerRef = useRef<HTMLDivElement>(null);
@@ -72,6 +73,7 @@ export const Wall = forwardRef<WallHandle, Props>(function Wall(
     if (key !== offsetsKeyRef.current) {
       offsetsKeyRef.current = key;
       setOffsets(next);
+      onTilesChange?.(next);
     }
   };
 
@@ -142,6 +144,23 @@ export const Wall = forwardRef<WallHandle, Props>(function Wall(
     }
   };
 
+  function isPrimary(o: Point): boolean {
+    const cx = -cam.current.x + viewport().width / 2;
+    const cy = -cam.current.y + viewport().height / 2;
+    let best = offsets[0];
+    let bestDist = Infinity;
+    for (const t of offsets) {
+      const d =
+        Math.abs(cx - (t.x + WORLD.width / 2)) +
+        Math.abs(cy - (t.y + WORLD.height / 2));
+      if (d < bestDist) {
+        bestDist = d;
+        best = t;
+      }
+    }
+    return o === best;
+  }
+
   return (
     <div
       className="wall"
@@ -163,27 +182,10 @@ export const Wall = forwardRef<WallHandle, Props>(function Wall(
               transform: `translate3d(${o.x}px,${o.y}px,0)`,
             }}
           >
-            {children}
+            {renderTile(o.x / WORLD.width, o.y / WORLD.height)}
           </div>
         ))}
       </div>
     </div>
   );
-
-  function isPrimary(o: Point): boolean {
-    const cx = -cam.current.x + viewport().width / 2;
-    const cy = -cam.current.y + viewport().height / 2;
-    let best = offsets[0];
-    let bestDist = Infinity;
-    for (const t of offsets) {
-      const d =
-        Math.abs(cx - (t.x + WORLD.width / 2)) +
-        Math.abs(cy - (t.y + WORLD.height / 2));
-      if (d < bestDist) {
-        bestDist = d;
-        best = t;
-      }
-    }
-    return o === best;
-  }
 });
