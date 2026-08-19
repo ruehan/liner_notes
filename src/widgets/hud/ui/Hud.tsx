@@ -3,10 +3,12 @@ import "./hud.css";
 
 interface Props {
   filters: ReactNode;
+  catalogCount: number;
+  onCatalog: () => void;
   onAbout: () => void;
 }
 
-export function Hud({ filters, onAbout }: Props) {
+export function Hud({ filters, catalogCount, onCatalog, onAbout }: Props) {
   return (
     <header className="hud">
       <a className="logo" href="/">
@@ -21,9 +23,15 @@ export function Hud({ filters, onAbout }: Props) {
       <nav className="hud__filters" aria-label="장르 필터">
         {filters}
       </nav>
-      <button type="button" className="about-btn" onClick={onAbout}>
-        about
-      </button>
+      <div className="hud__pills">
+        <button type="button" className="hud-pill" onClick={onCatalog}>
+          index
+          <sup>{String(catalogCount).padStart(2, "0")}</sup>
+        </button>
+        <button type="button" className="hud-pill" onClick={onAbout}>
+          about
+        </button>
+      </div>
     </header>
   );
 }

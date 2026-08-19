@@ -10,10 +10,23 @@ export interface OpenEntry {
 
 interface Props {
   entry: OpenEntry | null;
+  favorited?: boolean;
+  navPos?: { index: number; total: number } | null;
   onClose: () => void;
+  onToggleFavorite?: () => void;
+  onPrev?: () => void;
+  onNext?: () => void;
 }
 
-export function DetailSheet({ entry, onClose }: Props) {
+export function DetailSheet({
+  entry,
+  favorited = false,
+  navPos = null,
+  onClose,
+  onToggleFavorite,
+  onPrev,
+  onNext,
+}: Props) {
   const [shown, setShown] = useState<OpenEntry | null>(null);
   const [open, setOpen] = useState(false);
   const closing = useRef<ReturnType<typeof setTimeout> | null>(null);
@@ -119,12 +132,46 @@ export function DetailSheet({ entry, onClose }: Props) {
                 <dd>{track.length}</dd>
               </div>
             </dl>
-            <button type="button" className="detail__play" title="곧 구현">
-              <svg viewBox="0 0 12 12" aria-hidden="true">
-                <path d="M2 1.5v9L10.5 6z" fill="currentColor" />
-              </svg>
-              미리듣기
-            </button>
+            <div className="detail__actions">
+              <button type="button" className="detail__play" title="곧 구현">
+                <svg viewBox="0 0 12 12" aria-hidden="true">
+                  <path d="M2 1.5v9L10.5 6z" fill="currentColor" />
+                </svg>
+                미리듣기
+              </button>
+              {onToggleFavorite && (
+                <button
+                  type="button"
+                  className={`detail__fav${favorited ? " is-on" : ""}`}
+                  aria-pressed={favorited}
+                  onClick={onToggleFavorite}
+                >
+                  {favorited ? "♥ 수집됨" : "♡ 수집"}
+                </button>
+              )}
+            </div>
+            {navPos && navPos.total > 1 && (
+              <div className="detail__nav">
+                <button
+                  type="button"
+                  disabled={navPos.index === 0}
+                  onClick={onPrev}
+                >
+                  ← prev
+                </button>
+                <span>
+                  {String(navPos.index + 1).padStart(2, "0")} /{" "}
+                  {String(navPos.total).padStart(2, "0")}
+                </span>
+                <button
+                  type="button"
+                  disabled={navPos.index === navPos.total - 1}
+                  onClick={onNext}
+                >
+                  next →
+                </button>
+              </div>
+            )}
           </div>
 
           <div className="detail__art">

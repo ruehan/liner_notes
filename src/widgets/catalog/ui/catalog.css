@@ -1,0 +1,217 @@
+.catalog {
+  position: fixed;
+  inset: 0;
+  z-index: 70;
+  background: var(--bg);
+  color: var(--fg);
+  display: flex;
+  flex-direction: column;
+  animation: catalog-in var(--dur-3) var(--ease-out);
+}
+
+@keyframes catalog-in {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+.catalog__bar {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  padding: var(--hud-pad);
+  border-bottom: 1px dashed var(--line);
+  flex-wrap: wrap;
+}
+
+.catalog__count {
+  font-family: var(--mono);
+  font-size: var(--t-label);
+  font-weight: 700;
+  letter-spacing: var(--tr-wider);
+  text-transform: uppercase;
+  color: var(--accent);
+  font-variant-numeric: tabular-nums;
+}
+
+.catalog__search {
+  flex: 1;
+  min-width: 180px;
+  max-width: 420px;
+  font-family: var(--mono);
+  font-size: var(--t-ui);
+  padding: 9px 14px;
+  border: 1px solid var(--line);
+  border-radius: 999px;
+  background: var(--card);
+  color: var(--fg);
+}
+
+.catalog__search::placeholder {
+  color: var(--fg-faint);
+}
+
+.catalog__search:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 2px;
+}
+
+.catalog__play {
+  font-family: var(--mono);
+  font-size: var(--t-ui);
+  font-weight: 700;
+  letter-spacing: var(--tr-wide);
+  text-transform: uppercase;
+  padding: 9px 18px;
+  border-radius: 999px;
+  background: var(--fg);
+  color: var(--bg);
+  transition:
+    transform var(--dur-1) var(--ease-spring),
+    background-color var(--dur-1),
+    color var(--dur-1);
+}
+
+.catalog__play:hover:enabled {
+  transform: scale(1.05);
+  background: var(--accent);
+  color: #fff;
+}
+
+.catalog__play:disabled {
+  opacity: 0.4;
+  cursor: default;
+}
+
+.catalog__close {
+  width: 40px;
+  height: 40px;
+  display: grid;
+  place-items: center;
+  border-radius: 50%;
+  border: 1.5px solid var(--fg);
+  color: var(--fg);
+  transition:
+    background-color var(--dur-1),
+    color var(--dur-1),
+    transform var(--dur-1);
+}
+
+.catalog__close:hover {
+  background: var(--fg);
+  color: var(--bg);
+  transform: scale(0.9);
+}
+
+.catalog__close svg {
+  width: 46%;
+  height: 46%;
+}
+
+.catalog__scroll {
+  flex: 1;
+  overflow-y: auto;
+  scroll-snap-type: y mandatory;
+  overscroll-behavior: contain;
+}
+
+.catalog__slide {
+  position: relative;
+  height: 100%;
+  min-height: 320px;
+  scroll-snap-align: start;
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  align-items: center;
+  gap: clamp(16px, 3vw, 48px);
+  padding: 24px 6vw 60px;
+  border-bottom: 1px solid var(--line-soft);
+}
+
+.catalog__slide-no {
+  position: absolute;
+  right: 3vw;
+  bottom: -0.12em;
+  font-family: var(--display);
+  font-size: clamp(120px, 26vw, 300px);
+  font-weight: 600;
+  line-height: 0.8;
+  letter-spacing: -0.04em;
+  color: var(--fg);
+  opacity: 0.06;
+  pointer-events: none;
+}
+
+.catalog__slide-main {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 10px;
+  text-align: left;
+}
+
+.catalog__slide-cat {
+  font-family: var(--mono);
+  font-size: var(--t-label);
+  font-weight: 700;
+  letter-spacing: var(--tr-wider);
+  text-transform: uppercase;
+  color: var(--accent);
+}
+
+.catalog__slide-title {
+  font-family: var(--display);
+  font-size: clamp(34px, 6vw, 72px);
+  font-weight: 600;
+  letter-spacing: -0.02em;
+  line-height: 1.02;
+  transition: color var(--dur-1);
+}
+
+.catalog__slide-main:hover .catalog__slide-title {
+  color: var(--accent);
+  text-decoration: underline;
+  text-decoration-thickness: 3px;
+  text-underline-offset: 8px;
+}
+
+.catalog__slide-meta {
+  font-family: var(--mono);
+  font-size: var(--t-ui);
+  letter-spacing: 0.02em;
+  color: var(--fg-dim);
+}
+
+.catalog__slide-art {
+  width: clamp(96px, 12vw, 150px);
+  aspect-ratio: 1;
+  border-radius: var(--r-media);
+  overflow: hidden;
+  flex: none;
+  transform: rotate(1.6deg);
+  box-shadow: var(--shadow-paper);
+}
+
+.catalog__slide-art svg {
+  width: 100%;
+  height: 100%;
+  display: block;
+}
+
+.catalog__empty {
+  padding: 80px 6vw;
+  font-family: var(--mono);
+  font-size: var(--t-ui);
+  color: var(--fg-faint);
+  text-align: center;
+}
+
+@media (max-width: 760px) {
+  .catalog__slide {
+    grid-template-columns: 1fr auto;
+    padding-bottom: 40px;
+  }
+}

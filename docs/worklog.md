@@ -1,5 +1,18 @@
 # 작업 로그
 
+## 2026-08-19 — 카탈로그 인덱스 · 수집(큐레이션) · About
+
+- 브랜치: feat/archive-redesign
+- 한 일:
+  - 카탈로그 인덱스 위젯: 한 화면 한 항목 scroll-snap, 검색(제목·아티스트·
+    카탈로그 번호), "순서대로 듣기", 항목 클릭 → 상세 모달
+  - 수집 기능(features/curation): ♥ 토글, localStorage 영속, 타일 좌표 키
+  - 상세 시트 prev/next 내비게이션 (타일/카탈로그 컨텍스트)
+  - About 시트 (소개 + 조작 안내), HUD에 index/about 필 버튼
+  - 키보드: I=인덱스, Esc는 인덱스→About→상세 순으로 닫기, 입력창에서는 무시
+- 검증: verify.sh 통과 — 테스트 63개, typecheck/lint/build 클린
+- 가정: "순서대로 듣기"는 아직 재생 없이 상세 항목 순회(미리듣기는 다음 단계)
+
 ## 2026-08-19 — 무한 항목: 절차 생성 트랙으로 벽 채우기
 
 - 브랜치: feat/archive-redesign

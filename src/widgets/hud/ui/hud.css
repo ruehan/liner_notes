@@ -68,7 +68,12 @@
   color: var(--fg-dim);
 }
 
-.about-btn {
+.hud__pills {
+  display: flex;
+  gap: 8px;
+}
+
+.hud-pill {
   font-family: var(--mono);
   font-size: var(--t-chrome);
   letter-spacing: var(--tr-wide);
@@ -83,9 +88,16 @@
     color var(--dur-1);
 }
 
-.about-btn:hover {
+.hud-pill:hover {
   background: var(--fg);
   color: var(--bg);
+}
+
+.hud-pill sup {
+  font-size: 0.68em;
+  opacity: 0.6;
+  margin-left: 4px;
+  font-variant-numeric: tabular-nums;
 }
 
 @media (max-width: 760px) {

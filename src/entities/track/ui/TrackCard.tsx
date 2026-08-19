@@ -8,10 +8,12 @@ interface Props {
   ordinal: number;
   hidden: boolean;
   hot: boolean;
+  favorited: boolean;
   style: React.CSSProperties;
   onOpen: () => void;
   onEnter: () => void;
   onLeave: () => void;
+  onToggleFavorite: () => void;
 }
 
 export function TrackCard({
@@ -20,10 +22,12 @@ export function TrackCard({
   ordinal,
   hidden,
   hot,
+  favorited,
   style,
   onOpen,
   onEnter,
   onLeave,
+  onToggleFavorite,
 }: Props) {
   return (
     <article
@@ -47,6 +51,18 @@ export function TrackCard({
       <div className="track-card__artwrap">
         <CoverArt track={track} className="track-card__art" />
         <span className="track-card__tape">{track.genre}</span>
+        <button
+          type="button"
+          className={`track-card__fav${favorited ? " is-on" : ""}`}
+          aria-label={favorited ? "수집에서 제거" : "수집에 추가"}
+          aria-pressed={favorited}
+          onClick={(e) => {
+            e.stopPropagation();
+            onToggleFavorite();
+          }}
+        >
+          {favorited ? "♥" : "♡"}
+        </button>
         <span className="track-card__ordinal">{String(ordinal).padStart(2, "0")}</span>
       </div>
       <header className="track-card__head">

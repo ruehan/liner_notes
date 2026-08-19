@@ -18,12 +18,22 @@ import { Hud } from "@/widgets/hud";
 import { Readout } from "@/widgets/readout";
 import { DetailSheet, type OpenEntry } from "@/widgets/detail";
 import { Boot } from "@/widgets/boot";
+import { Catalog, type CatalogEntry } from "@/widgets/catalog";
+import { About } from "@/widgets/about";
 import {
   FilterTabs,
   isVisible,
   type FilterId,
 } from "@/features/track-filter";
 import { ShuffleButton, pickShuffleIndex } from "@/features/shuffle";
+import {
+  favKey,
+  favKeyFromTrackId,
+  loadFavorites,
+  parseFavKey,
+  saveFavorites,
+  toggleFavorite,
+} from "@/features/curation";
 import "./main-page.css";
 
 interface HoverEntry {
@@ -48,9 +58,13 @@ export function MainPage() {
   const [tiles, setTiles] = useState<Point[]>([{ x: 0, y: 0 }]);
   const [filter, setFilter] = useState<FilterId>("all");
   const [openEntry, setOpenEntry] = useState<OpenEntry | null>(null);
+  const [navList, setNavList] = useState<OpenEntry[] | null>(null);
   const [hoverEntry, setHoverEntry] = useState<HoverEntry | null>(null);
   const [hotKey, setHotKey] = useState<string | null>(null);
   const [hintGone, setHintGone] = useState(false);
+  const [catalogOpen, setCatalogOpen] = useState(false);
+  const [aboutOpen, setAboutOpen] = useState(false);
+  const [favorites, setFavorites] = useState<string[]>(() => loadFavorites());
 
   const wallRef = useRef<WallHandle>(null);
   const hotTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
@@ -63,6 +77,14 @@ export function MainPage() {
   const hideHint = useCallback(() => setHintGone(true), []);
   const bootDone = useCallback(() => {}, []);
   const onTilesChange = useCallback((next: Point[]) => setTiles(next), []);
+
+  const handleToggleFavorite = useCallback((key: string) => {
+    setFavorites((prev) => {
+      const next = toggleFavorite(prev, key);
+      saveFavorites(next);
+      return next;
+    });
+  }, []);
 
   const counts = useMemo(() => {
     const c: Record<FilterId, number> = {
@@ -81,6 +103,73 @@ export function MainPage() {
     }
     return c;
   }, [tiles]);
+
+  const catalogEntries = useMemo<CatalogEntry[]>(() => {
+    const list: CatalogEntry[] = [];
+    const seen = new Set<string>();
+    generateTileTracks(0, 0).forEach((track, i) => {
+      const key = favKey(0, 0, i);
+      list.push({ track, catalog: tileCatalog(0, 0, i), ordinal: i + 1, k: 0, m: 0, i });
+      seen.add(key);
+    });
+    for (const raw of favorites) {
+      if (seen.has(raw)) continue;
+      const ref = parseFavKey(raw);
+      if (!ref) continue;
+      const tracks = generateTileTracks(ref.k, ref.m);
+      if (ref.i < 0 || ref.i >= tracks.length) continue;
+      list.push({
+        track: tracks[ref.i],
+        catalog: tileCatalog(ref.k, ref.m, ref.i),
+        ordinal: ref.i + 1,
+        k: ref.k,
+        m: ref.m,
+        i: ref.i,
+      });
+      seen.add(raw);
+    }
+    return list;
+  }, [favorites]);
+
+  const openFromCatalog = useCallback(
+    (entry: CatalogEntry, list: CatalogEntry[]) => {
+      const nav: OpenEntry[] = list.map((e) => ({
+        track: e.track,
+        catalog: e.catalog,
+        ordinal: e.ordinal,
+      }));
+      setNavList(nav);
+      setOpenEntry({ track: entry.track, catalog: entry.catalog, ordinal: entry.ordinal });
+      setCatalogOpen(false);
+    },
+    [],
+  );
+
+  const stepNav = useCallback(
+    (dir: -1 | 1) => {
+      setOpenEntry((cur) => {
+        if (!cur || !navList) return cur;
+        const idx = navList.findIndex((e) => e.catalog === cur.catalog);
+        if (idx < 0) return cur;
+        const next = idx + dir;
+        if (next < 0 || next >= navList.length) return cur;
+        return navList[next];
+      });
+    },
+    [navList],
+  );
+
+  const navPos = useMemo(() => {
+    if (!openEntry || !navList || navList.length <= 1) return null;
+    const idx = navList.findIndex((e) => e.catalog === openEntry.catalog);
+    if (idx < 0) return null;
+    return { index: idx, total: navList.length };
+  }, [openEntry, navList]);
+
+  const closeDetail = useCallback(() => {
+    setOpenEntry(null);
+    setNavList(null);
+  }, []);
 
   const shuffle = useCallback(() => {
     if (openEntry) return;
@@ -120,12 +209,23 @@ export function MainPage() {
 
   useEffect(() => {
     const onKeyDown = (e: KeyboardEvent) => {
-      if (e.key === "Escape") setOpenEntry(null);
-      if (e.key === "r" || e.key === "R") shuffle();
+      const target = e.target as HTMLElement | null;
+      if (target && ["INPUT", "TEXTAREA"].includes(target.tagName)) return;
+      if (e.key === "Escape") {
+        if (catalogOpen) setCatalogOpen(false);
+        else if (aboutOpen) setAboutOpen(false);
+        else if (openEntry) closeDetail();
+      }
+      if ((e.key === "r" || e.key === "R") && !openEntry && !catalogOpen && !aboutOpen) {
+        shuffle();
+      }
+      if ((e.key === "i" || e.key === "I") && !openEntry && !catalogOpen && !aboutOpen) {
+        setCatalogOpen(true);
+      }
     };
     window.addEventListener("keydown", onKeyDown);
     return () => window.removeEventListener("keydown", onKeyDown);
-  }, [shuffle]);
+  }, [shuffle, openEntry, catalogOpen, aboutOpen, closeDetail]);
 
   const renderTile = useCallback(
     (k: number, m: number) => {
@@ -134,6 +234,7 @@ export function MainPage() {
       return tracks.map((track, i) => {
         const catalog = tileCatalog(k, m, i);
         const key = `${k},${m},${i}`;
+        const fvKey = favKey(k, m, i);
         return (
           <TrackCard
             key={track.id}
@@ -142,22 +243,36 @@ export function MainPage() {
             ordinal={i + 1}
             hidden={!isVisible(track, filter)}
             hot={hotKey === key}
+            favorited={favorites.includes(fvKey)}
             style={{
               left: spots[i].x,
               top: spots[i].y,
               transform: `rotate(${spots[i].rot}deg)`,
             }}
-            onOpen={() =>
-              setOpenEntry({ track, catalog, ordinal: i + 1 })
-            }
+            onOpen={() => {
+              const nav: OpenEntry[] = tracks
+                .map((t, j) => ({
+                  track: t,
+                  catalog: tileCatalog(k, m, j),
+                  ordinal: j + 1,
+                }))
+                .filter((e) => isVisible(e.track, filter));
+              setNavList(nav);
+              setOpenEntry({ track, catalog, ordinal: i + 1 });
+            }}
             onEnter={() => setHoverEntry({ track, catalog })}
             onLeave={() => setHoverEntry(null)}
+            onToggleFavorite={() => handleToggleFavorite(fvKey)}
           />
         );
       });
     },
-    [filter, hotKey],
+    [filter, hotKey, favorites, handleToggleFavorite],
   );
+
+  const detailFavKey = openEntry
+    ? favKeyFromTrackId(openEntry.track.id)
+    : null;
 
   return (
     <div className="main-page">
@@ -172,7 +287,9 @@ export function MainPage() {
         filters={
           <FilterTabs value={filter} counts={counts} onChange={setFilter} />
         }
-        onAbout={() => window.alert("about — 선곡 기준과 소개가 들어가는 자리.")}
+        catalogCount={catalogEntries.length}
+        onCatalog={() => setCatalogOpen(true)}
+        onAbout={() => setAboutOpen(true)}
       />
 
       <Readout
@@ -186,7 +303,26 @@ export function MainPage() {
       </div>
       <div className="main-page__vignette" aria-hidden="true" />
 
-      <DetailSheet entry={openEntry} onClose={() => setOpenEntry(null)} />
+      <Catalog
+        open={catalogOpen}
+        entries={catalogEntries}
+        onClose={() => setCatalogOpen(false)}
+        onOpenEntry={openFromCatalog}
+      />
+      <About open={aboutOpen} onClose={() => setAboutOpen(false)} />
+      <DetailSheet
+        entry={openEntry}
+        favorited={detailFavKey ? favorites.includes(detailFavKey) : false}
+        navPos={navPos}
+        onClose={closeDetail}
+        onToggleFavorite={
+          detailFavKey
+            ? () => handleToggleFavorite(detailFavKey)
+            : undefined
+        }
+        onPrev={() => stepNav(-1)}
+        onNext={() => stepNav(1)}
+      />
       <Boot onDone={bootDone} />
     </div>
   );
