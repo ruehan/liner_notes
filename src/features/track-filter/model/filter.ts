@@ -1,4 +1,4 @@
-import type { GenreId, Track } from "@/entities/track";
+import type { GenreId } from "@/entities/track";
 
 export type FilterId = "all" | GenreId;
 
@@ -9,25 +9,29 @@ export const FILTER_ORDER: FilterId[] = [
   "electronic",
 ];
 
-export function isVisible(track: Track, filter: FilterId): boolean {
-  return filter === "all" || track.genre === filter;
+interface GenreItem {
+  genre: GenreId;
 }
 
-export function visibleIndices(tracks: Track[], filter: FilterId): number[] {
+export function isVisible(item: GenreItem, filter: FilterId): boolean {
+  return filter === "all" || item.genre === filter;
+}
+
+export function visibleIndices<T extends GenreItem>(items: T[], filter: FilterId): number[] {
   const out: number[] = [];
-  tracks.forEach((t, i) => {
-    if (isVisible(t, filter)) out.push(i);
+  items.forEach((item, index) => {
+    if (isVisible(item, filter)) out.push(index);
   });
   return out;
 }
 
-export function filterCounts(tracks: Track[]): Record<FilterId, number> {
+export function filterCounts<T extends GenreItem>(items: T[]): Record<FilterId, number> {
   const counts: Record<FilterId, number> = {
-    all: tracks.length,
+    all: items.length,
     ambient: 0,
     jazz: 0,
     electronic: 0,
   };
-  for (const t of tracks) counts[t.genre] += 1;
+  for (const item of items) counts[item.genre] += 1;
   return counts;
 }

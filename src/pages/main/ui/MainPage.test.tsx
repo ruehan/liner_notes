@@ -1,8 +1,11 @@
-import { beforeEach, describe, expect, it } from "vitest";
+import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { fireEvent, render, screen, waitFor, within } from "@testing-library/react";
-import { TRACKS } from "@/entities/track";
+import { generateTileAlbums } from "@/entities/track";
 import { saveFavorites } from "@/features/curation";
 import { MainPage } from "./MainPage";
+
+const SESSION_SEED = Math.floor(0.5 * 2_147_483_647);
+const HOME_ALBUMS = generateTileAlbums(0, 0, SESSION_SEED);
 
 function firstCard(title: string, artist: string) {
   return screen.getAllByLabelText(`${title} — ${artist}`)[0];
@@ -10,13 +13,18 @@ function firstCard(title: string, artist: string) {
 
 beforeEach(() => {
   window.localStorage.clear();
+  vi.spyOn(Math, "random").mockReturnValue(0.5);
+});
+
+afterEach(() => {
+  vi.restoreAllMocks();
 });
 
 describe("MainPage", () => {
-  it("모든 트랙 카드와 필터 탭을 렌더한다", () => {
+  it("모든 앨범 카드와 필터 탭을 렌더한다", () => {
     render(<MainPage />);
-    for (const t of TRACKS) {
-      expect(firstCard(t.title, t.artist)).toBeInTheDocument();
+    for (const album of HOME_ALBUMS) {
+      expect(firstCard(album.title, album.artist)).toBeInTheDocument();
     }
     expect(screen.getByRole("button", { name: /^all/ })).toHaveAttribute(
       "aria-pressed",
@@ -28,19 +36,25 @@ describe("MainPage", () => {
     render(<MainPage />);
     fireEvent.click(screen.getByRole("button", { name: /^jazz/ }));
 
-    const jazzCard = firstCard("Blue in Green", "Bill Evans Trio");
-    const otherCard = firstCard("Xtal", "Aphex Twin");
+    const jazzAlbum = HOME_ALBUMS.find((album) => album.genre === "jazz")!;
+    const otherAlbum = HOME_ALBUMS.find((album) => album.genre !== "jazz")!;
+    const jazzCard = firstCard(jazzAlbum.title, jazzAlbum.artist);
+    const otherCard = firstCard(otherAlbum.title, otherAlbum.artist);
     expect(jazzCard.className).not.toContain("is-hidden");
     expect(otherCard.className).toContain("is-hidden");
   });
 
-  it("카드를 클릭하면 상세 시트가 열리고 Escape로 닫힌다", async () => {
+  it("앨범 카드를 클릭하면 수록곡 모달이 열리고 Escape로 닫힌다", async () => {
     render(<MainPage />);
-    fireEvent.click(firstCard("Blue in Green", "Bill Evans Trio"));
+    const album = HOME_ALBUMS[0];
+    fireEvent.click(firstCard(album.title, album.artist));
 
     const dialog = await screen.findByRole("dialog");
-    expect(dialog).toHaveTextContent("Blue in Green");
-    expect(dialog).toHaveTextContent("Bill Evans Trio");
+    expect(dialog).toHaveTextContent(album.title);
+    expect(dialog).toHaveTextContent(album.artist);
+    expect(within(dialog).getByRole("list", { name: "수록곡" })).toHaveTextContent(
+      album.tracks[0].title,
+    );
 
     fireEvent.keyDown(window, { key: "Escape" });
     await waitFor(() =>
@@ -50,7 +64,8 @@ describe("MainPage", () => {
 
   it("수집 토글이 동작하고 홈 선곡은 이미 인덱스에 있다", () => {
     render(<MainPage />);
-    const card = firstCard("An Ending", "Brian Eno");
+    const album = HOME_ALBUMS[0];
+    const card = firstCard(album.title, album.artist);
     fireEvent.click(within(card).getByRole("button", { name: "수집에 추가" }));
     expect(
       within(card).getByRole("button", { name: "수집에서 제거" }),
@@ -74,14 +89,15 @@ describe("MainPage", () => {
     render(<MainPage />);
     fireEvent.click(screen.getByRole("button", { name: /^index/ }));
 
+    const album = HOME_ALBUMS[1];
     const slideTitle = screen
-      .getAllByText("Blue in Green")
+      .getAllByText(album.title)
       .find((el) => el.className.includes("catalog__slide-title"));
     expect(slideTitle).toBeDefined();
     fireEvent.click(slideTitle!.closest("button")!);
 
     const dialog = await screen.findByRole("dialog");
-    expect(dialog).toHaveTextContent("Bill Evans Trio");
+    expect(dialog).toHaveTextContent(album.artist);
   });
 
   it("순서대로 듣기로 열어 next 버튼으로 이동한다", async () => {
@@ -94,7 +110,7 @@ describe("MainPage", () => {
 
     fireEvent.click(screen.getByRole("button", { name: /^next/ }));
     await waitFor(() =>
-      expect(dialog).toHaveTextContent("Blue in Green"),
+      expect(dialog).toHaveTextContent(HOME_ALBUMS[1].title),
     );
   });
 

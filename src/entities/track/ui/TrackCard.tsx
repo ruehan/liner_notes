@@ -1,9 +1,9 @@
-import type { Track } from "../model/types";
+import type { Album } from "../model/types";
 import { CoverArt } from "./CoverArt";
 import "./track-card.css";
 
 interface Props {
-  track: Track;
+  album: Album;
   catalog: string;
   ordinal: number;
   hidden: boolean;
@@ -16,8 +16,8 @@ interface Props {
   onToggleFavorite: () => void;
 }
 
-export function TrackCard({
-  track,
+export function AlbumCard({
+  album,
   catalog,
   ordinal,
   hidden,
@@ -37,7 +37,7 @@ export function TrackCard({
       style={style}
       role="button"
       tabIndex={hidden ? -1 : 0}
-      aria-label={`${track.title} — ${track.artist}`}
+      aria-label={`${album.title} — ${album.artist}`}
       onClick={onOpen}
       onKeyDown={(e) => {
         if (e.key === "Enter" || e.key === " ") {
@@ -66,8 +66,8 @@ export function TrackCard({
       }}
     >
       <div className="track-card__artwrap">
-        <CoverArt track={track} className="track-card__art" />
-        <span className="track-card__tape">{track.genre}</span>
+        <CoverArt track={album.cover} className="track-card__art" />
+        <span className="track-card__tape">{album.genre}</span>
         <button
           type="button"
           className={`track-card__fav${favorited ? " is-on" : ""}`}
@@ -84,15 +84,15 @@ export function TrackCard({
       </div>
       <header className="track-card__head">
         <span className="track-card__no">{catalog}</span>
-        <h3 className="track-card__title">{track.title}</h3>
+        <h3 className="track-card__title">{album.title}</h3>
         <p className="track-card__byline">
-          {track.artist}
-          <span className="track-card__year">{track.year}</span>
+          {album.artist}
+          <span className="track-card__year">{album.year}</span>
         </p>
       </header>
       <footer className="track-card__foot">
-        <span>{track.album}</span>
-        <span className="track-card__len">{track.length}</span>
+        <span>{album.label}</span>
+        <span className="track-card__len">{album.tracks.length} tracks</span>
       </footer>
     </article>
   );

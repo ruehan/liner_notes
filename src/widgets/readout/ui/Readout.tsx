@@ -1,22 +1,22 @@
-import type { Track } from "@/entities/track";
+import type { Album } from "@/entities/track";
 import "./readout.css";
 
 interface Props {
-  track: Track | null;
+  album: Album | null;
   catalog: string | null;
 }
 
-export function Readout({ track, catalog }: Props) {
+export function Readout({ album, catalog }: Props) {
   return (
-    <div className={`readout${track ? " is-visible" : ""}`} aria-live="polite">
-      {track && (
+    <div className={`readout${album ? " is-visible" : ""}`} aria-live="polite">
+      {album && (
         <>
           <span className="readout__no">
-            {catalog ?? ""} · {track.genre}
+            {catalog ?? ""} · {album.genre}
           </span>
-          <span className="readout__title">{track.title}</span>
+          <span className="readout__title">{album.title}</span>
           <span className="readout__meta">
-            {track.artist} · {track.album} · {track.year}
+            {album.artist} · {album.tracks.length} tracks · {album.year}
           </span>
         </>
       )}

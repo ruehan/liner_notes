@@ -52,6 +52,7 @@ export const Wall = forwardRef<WallHandle, Props>(function Wall(
   const offsetsKeyRef = useRef("");
   const drag = useRef({
     active: false,
+    captured: false,
     dist: 0,
     hinted: false,
     sx: 0,
@@ -108,13 +109,13 @@ export const Wall = forwardRef<WallHandle, Props>(function Wall(
   const onPointerDown = (e: ReactPointerEvent<HTMLDivElement>) => {
     const d = drag.current;
     d.active = true;
+    d.captured = false;
     d.dist = 0;
     d.hinted = false;
     d.sx = e.clientX;
     d.sy = e.clientY;
     d.ox = cam.current.x;
     d.oy = cam.current.y;
-    e.currentTarget.setPointerCapture(e.pointerId);
     e.currentTarget.classList.add("is-dragging");
   };
 
@@ -128,6 +129,10 @@ export const Wall = forwardRef<WallHandle, Props>(function Wall(
     const dx = e.clientX - d.sx;
     const dy = e.clientY - d.sy;
     d.dist = Math.max(d.dist, Math.hypot(dx, dy));
+    if (!d.captured && d.dist >= DRAG_CLICK_THRESHOLD) {
+      e.currentTarget.setPointerCapture(e.pointerId);
+      d.captured = true;
+    }
     cam.current = { x: d.ox + dx, y: d.oy + dy };
     apply(false);
     if (!d.hinted && d.dist > HINT_THRESHOLD) {

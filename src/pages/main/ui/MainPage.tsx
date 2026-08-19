@@ -1,9 +1,9 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import {
-  TrackCard,
-  generateTileTracks,
+  AlbumCard,
+  generateTileAlbums,
   tileCatalog,
-  type Track,
+  type Album,
 } from "@/entities/track";
 import {
   WORLD,
@@ -24,35 +24,34 @@ import {
   type FilterId,
 } from "@/features/track-filter";
 import { ShuffleButton, pickShuffleIndex } from "@/features/shuffle";
-import {
-  favKey,
-  favKeyFromTrackId,
-  loadFavorites,
-  parseFavKey,
-  saveFavorites,
-  toggleFavorite,
-} from "@/features/curation";
+import { favKey, loadFavorites, parseFavKey, saveFavorites, toggleFavorite } from "@/features/curation";
 import "./main-page.css";
 
 interface HoverEntry {
-  track: Track;
+  album: Album;
   catalog: string;
 }
 
 const spotCache = new Map<string, MosaicSpot[]>();
+const SESSION_SEED_MAX = 2_147_483_647;
 
-function tileSpots(k: number, m: number): MosaicSpot[] {
-  const key = `${k},${m}`;
+function createSessionSeed(): number {
+  return Math.floor(Math.random() * SESSION_SEED_MAX);
+}
+
+function tileSpots(k: number, m: number, sessionSeed: number): MosaicSpot[] {
+  const key = `${sessionSeed}:${k},${m}`;
   let spots = spotCache.get(key);
   if (!spots) {
-    const tracks = generateTileTracks(k, m);
-    spots = generateMosaicSpots(tracks.length);
+    const albums = generateTileAlbums(k, m, sessionSeed);
+    spots = generateMosaicSpots(albums.length);
     spotCache.set(key, spots);
   }
   return spots;
 }
 
 export function MainPage() {
+  const [sessionSeed] = useState(createSessionSeed);
   const [tiles, setTiles] = useState<Point[]>([{ x: 0, y: 0 }]);
   const [filter, setFilter] = useState<FilterId>("all");
   const [openEntry, setOpenEntry] = useState<OpenEntry | null>(null);
@@ -94,50 +93,57 @@ export function MainPage() {
     for (const o of tiles) {
       const k = o.x / WORLD.width;
       const m = o.y / WORLD.height;
-      for (const t of generateTileTracks(k, m)) {
+      for (const album of generateTileAlbums(k, m, sessionSeed)) {
         c.all += 1;
-        c[t.genre] += 1;
+        c[album.genre] += 1;
       }
     }
     return c;
-  }, [tiles]);
+  }, [tiles, sessionSeed]);
 
   const catalogEntries = useMemo<CatalogEntry[]>(() => {
     const list: CatalogEntry[] = [];
     const seen = new Set<string>();
-    generateTileTracks(0, 0).forEach((track, i) => {
-      const key = favKey(0, 0, i);
-      list.push({ track, catalog: tileCatalog(0, 0, i), ordinal: i + 1, k: 0, m: 0, i });
+    generateTileAlbums(0, 0, sessionSeed).forEach((album, i) => {
+      const key = favKey(0, 0, i, sessionSeed);
+      list.push({ album, catalog: tileCatalog(0, 0, i), ordinal: i + 1, k: 0, m: 0, i, favoriteKey: key });
       seen.add(key);
     });
     for (const raw of favorites) {
       if (seen.has(raw)) continue;
       const ref = parseFavKey(raw);
       if (!ref) continue;
-      const tracks = generateTileTracks(ref.k, ref.m);
-      if (ref.i < 0 || ref.i >= tracks.length) continue;
+      const albums = generateTileAlbums(ref.k, ref.m, ref.sessionSeed);
+      if (ref.i < 0 || ref.i >= albums.length) continue;
       list.push({
-        track: tracks[ref.i],
+        album: albums[ref.i],
         catalog: tileCatalog(ref.k, ref.m, ref.i),
         ordinal: ref.i + 1,
         k: ref.k,
         m: ref.m,
         i: ref.i,
+        favoriteKey: raw,
       });
       seen.add(raw);
     }
     return list;
-  }, [favorites]);
+  }, [favorites, sessionSeed]);
 
   const openFromCatalog = useCallback(
     (entry: CatalogEntry, list: CatalogEntry[]) => {
       const nav: OpenEntry[] = list.map((e) => ({
-        track: e.track,
+        album: e.album,
         catalog: e.catalog,
         ordinal: e.ordinal,
+        favoriteKey: e.favoriteKey,
       }));
       setNavList(nav);
-      setOpenEntry({ track: entry.track, catalog: entry.catalog, ordinal: entry.ordinal });
+      setOpenEntry({
+        album: entry.album,
+        catalog: entry.catalog,
+        ordinal: entry.ordinal,
+        favoriteKey: entry.favoriteKey,
+      });
       setCatalogOpen(false);
     },
     [],
@@ -181,8 +187,8 @@ export function MainPage() {
           const key = `${k},${m}`;
           if (seen.has(key)) continue;
           seen.add(key);
-          generateTileTracks(k, m).forEach((t, i) => {
-            if (isVisible(t, filter)) candidates.push({ k, m, i });
+          generateTileAlbums(k, m, sessionSeed).forEach((album, i) => {
+            if (isVisible(album, filter)) candidates.push({ k, m, i });
           });
         }
       }
@@ -190,20 +196,20 @@ export function MainPage() {
     const idx = pickShuffleIndex(candidates.map((_, j) => j));
     if (idx === null) return;
     const c = candidates[idx];
-    const tracks = generateTileTracks(c.k, c.m);
-    const spots = tileSpots(c.k, c.m);
-    const track = tracks[c.i];
+    const albums = generateTileAlbums(c.k, c.m, sessionSeed);
+    const spots = tileSpots(c.k, c.m, sessionSeed);
+    const album = albums[c.i];
     const key = `${c.k},${c.m},${c.i}`;
 
     setHotKey(key);
     if (hotTimer.current) clearTimeout(hotTimer.current);
     hotTimer.current = setTimeout(() => setHotKey(null), 1600);
-    setHoverEntry({ track, catalog: tileCatalog(c.k, c.m, c.i) });
+    setHoverEntry({ album, catalog: tileCatalog(c.k, c.m, c.i) });
     wallRef.current?.jumpTo({
       x: c.k * WORLD.width + spots[c.i].x + spots[c.i].width / 2,
       y: c.m * WORLD.height + spots[c.i].y + spots[c.i].height / 2,
     });
-  }, [tiles, filter, openEntry]);
+  }, [tiles, filter, openEntry, sessionSeed]);
 
   useEffect(() => {
     const onKeyDown = (e: KeyboardEvent) => {
@@ -227,19 +233,19 @@ export function MainPage() {
 
   const renderTile = useCallback(
     (k: number, m: number) => {
-      const tracks = generateTileTracks(k, m);
-      const spots = tileSpots(k, m);
-      return tracks.map((track, i) => {
+      const albums = generateTileAlbums(k, m, sessionSeed);
+      const spots = tileSpots(k, m, sessionSeed);
+      return albums.map((album, i) => {
         const catalog = tileCatalog(k, m, i);
         const key = `${k},${m},${i}`;
-        const fvKey = favKey(k, m, i);
+        const fvKey = favKey(k, m, i, sessionSeed);
         return (
-          <TrackCard
-            key={track.id}
-            track={track}
+          <AlbumCard
+            key={album.id}
+            album={album}
             catalog={catalog}
             ordinal={i + 1}
-            hidden={!isVisible(track, filter)}
+            hidden={!isVisible(album, filter)}
             hot={hotKey === key}
             favorited={favorites.includes(fvKey)}
             style={{
@@ -249,29 +255,31 @@ export function MainPage() {
               height: spots[i].height,
             }}
             onOpen={() => {
-              const nav: OpenEntry[] = tracks
-                .map((t, j) => ({
-                  track: t,
+              const nav: OpenEntry[] = albums
+                .map((item, j) => ({
+                  album: item,
                   catalog: tileCatalog(k, m, j),
                   ordinal: j + 1,
+                  favoriteKey: favKey(k, m, j, sessionSeed),
                 }))
-                .filter((e) => isVisible(e.track, filter));
+                .filter((entry) => isVisible(entry.album, filter));
               setNavList(nav);
-              setOpenEntry({ track, catalog, ordinal: i + 1 });
+              setOpenEntry({
+                album,
+                catalog,
+                ordinal: i + 1,
+                favoriteKey: fvKey,
+              });
             }}
-            onEnter={() => setHoverEntry({ track, catalog })}
+            onEnter={() => setHoverEntry({ album, catalog })}
             onLeave={() => setHoverEntry(null)}
             onToggleFavorite={() => handleToggleFavorite(fvKey)}
           />
         );
       });
     },
-    [filter, hotKey, favorites, handleToggleFavorite],
+    [filter, hotKey, favorites, handleToggleFavorite, sessionSeed],
   );
-
-  const detailFavKey = openEntry
-    ? favKeyFromTrackId(openEntry.track.id)
-    : null;
 
   return (
     <div className="main-page">
@@ -292,7 +300,7 @@ export function MainPage() {
       />
 
       <Readout
-        track={openEntry ? null : hoverEntry?.track ?? null}
+        album={openEntry ? null : hoverEntry?.album ?? null}
         catalog={openEntry ? null : hoverEntry?.catalog ?? null}
       />
       <ShuffleButton onShuffle={shuffle} />
@@ -311,13 +319,11 @@ export function MainPage() {
       <About open={aboutOpen} onClose={() => setAboutOpen(false)} />
       <DetailSheet
         entry={openEntry}
-        favorited={detailFavKey ? favorites.includes(detailFavKey) : false}
+        favorited={openEntry ? favorites.includes(openEntry.favoriteKey) : false}
         navPos={navPos}
         onClose={closeDetail}
         onToggleFavorite={
-          detailFavKey
-            ? () => handleToggleFavorite(detailFavKey)
-            : undefined
+          openEntry ? () => handleToggleFavorite(openEntry.favoriteKey) : undefined
         }
         onPrev={() => stepNav(-1)}
         onNext={() => stepNav(1)}

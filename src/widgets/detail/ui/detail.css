@@ -110,6 +110,12 @@
   transform: none;
 }
 
+.detail__body {
+  max-height: calc(100vh - 18vh);
+  padding-right: 12px;
+  overflow-y: auto;
+}
+
 .detail__head {
   display: flex;
   align-items: center;
@@ -226,6 +232,66 @@
   font-family: var(--mono);
   font-size: var(--t-ui);
   color: var(--fg);
+}
+
+.detail__tracklist {
+  margin-top: clamp(18px, 2.2vw, 28px);
+  padding-top: clamp(14px, 1.6vw, 20px);
+  border-top: 1px dashed var(--line);
+}
+
+.detail__tracklist-head {
+  display: flex;
+  justify-content: space-between;
+  gap: 12px;
+  margin: 0 0 8px;
+  font-family: var(--mono);
+  font-size: var(--t-micro);
+  font-weight: 700;
+  letter-spacing: var(--tr-wider);
+  text-transform: uppercase;
+  color: var(--fg-faint);
+}
+
+.detail__tracks {
+  display: grid;
+  gap: 2px;
+  max-height: min(28vh, 240px);
+  margin: 0;
+  padding: 0;
+  overflow-y: auto;
+  list-style: none;
+}
+
+.detail__tracks li {
+  display: grid;
+  grid-template-columns: 28px minmax(0, 1fr) auto;
+  align-items: baseline;
+  gap: 10px;
+  padding: 7px 8px;
+  border-radius: 3px;
+  color: var(--fg-dim);
+}
+
+.detail__tracks li.is-featured {
+  background: color-mix(in srgb, var(--card) 88%, transparent);
+  color: var(--fg);
+}
+
+.detail__track-no,
+.detail__track-length {
+  font-family: var(--mono);
+  font-size: var(--t-micro);
+  font-variant-numeric: tabular-nums;
+  color: var(--fg-faint);
+}
+
+.detail__track-title {
+  overflow: hidden;
+  font-size: var(--t-ui);
+  font-weight: 500;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }
 
 .detail__actions {
@@ -414,6 +480,12 @@
     justify-self: start;
   }
 
+  .detail__body {
+    max-height: none;
+    padding-right: 0;
+    overflow: visible;
+  }
+
   .detail__frame {
     width: min(62vw, 300px);
   }
@@ -425,5 +497,9 @@
 
   .detail__entry-no {
     display: none;
+  }
+
+  .detail__tracks {
+    max-height: none;
   }
 }

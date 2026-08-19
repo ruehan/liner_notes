@@ -1,6 +1,7 @@
 import { createRng } from "@/shared/lib";
 import { GENRE_ORDER, TRACKS, catalogNo } from "./data";
-import type { GenreId, Track } from "./types";
+import { albumsFromTracks } from "./album";
+import type { Album, GenreId, Track } from "./types";
 
 export function hashKey(key: string): number {
   let h = 0;
@@ -80,10 +81,13 @@ const DEFINITIONS = [
 
 const ADJ_FILL = ["조용한", "느린", "차가운", "따뜻한", "거친", "투명한", "무게 없는", "낡은"];
 
-export function generateTileTracks(k: number, m: number): Track[] {
-  if (isHomeTile(k, m)) return TRACKS;
+export function generateTileTracks(k: number, m: number, sessionSeed?: number): Track[] {
+  if (isHomeTile(k, m) && sessionSeed === undefined) return TRACKS;
 
-  const rng = createRng(hashKey(`tile:${k},${m}`));
+  const seed = sessionSeed === undefined
+    ? `tile:${k},${m}`
+    : `session:${sessionSeed}:tile:${k},${m}`;
+  const rng = createRng(hashKey(seed));
   const count = TRACKS.length;
   const tracks: Track[] = [];
 
@@ -126,7 +130,7 @@ export function generateTileTracks(k: number, m: number): Track[] {
     );
 
     tracks.push({
-      id: `${k}:${m}:${i}`,
+      id: sessionSeed === undefined ? `${k}:${m}:${i}` : `${sessionSeed}:${k}:${m}:${i}`,
       title,
       artist,
       album,
@@ -139,4 +143,8 @@ export function generateTileTracks(k: number, m: number): Track[] {
     });
   }
   return tracks;
+}
+
+export function generateTileAlbums(k: number, m: number, sessionSeed?: number): Album[] {
+  return albumsFromTracks(generateTileTracks(k, m, sessionSeed));
 }

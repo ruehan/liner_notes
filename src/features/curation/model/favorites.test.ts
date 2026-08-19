@@ -24,6 +24,12 @@ describe("favKey / parseFavKey", () => {
     expect(parseFavKey("0,0:0")).toEqual({ k: 0, m: 0, i: 0 });
   });
 
+  it("세션 시드를 포함한 키도 앨범을 다시 찾을 수 있다", () => {
+    const key = favKey(0, 0, 4, 712_340);
+    expect(key).toBe("0,0:4@712340");
+    expect(parseFavKey(key)).toEqual({ k: 0, m: 0, i: 4, sessionSeed: 712_340 });
+  });
+
   it("이상한 문자열은 null", () => {
     expect(parseFavKey("abc")).toBeNull();
     expect(parseFavKey("1,2")).toBeNull();

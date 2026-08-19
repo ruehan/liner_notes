@@ -1,15 +1,16 @@
 import { useEffect, useMemo, useState } from "react";
-import { CoverArt, type Track } from "@/entities/track";
+import { CoverArt, type Album } from "@/entities/track";
 import { filterByQuery } from "../model/search";
 import "./catalog.css";
 
 export interface CatalogEntry {
-  track: Track;
+  album: Album;
   catalog: string;
   ordinal: number;
   k: number;
   m: number;
   i: number;
+  favoriteKey: string;
 }
 
 interface Props {
@@ -24,9 +25,9 @@ export function Catalog({ open, entries, onClose, onOpenEntry }: Props) {
   const filtered = useMemo(
     () =>
       filterByQuery(entries, query, (e) => [
-        e.track.title,
-        e.track.artist,
-        e.track.album,
+        e.album.title,
+        e.album.artist,
+        ...e.album.tracks.map((track) => track.title),
         e.catalog,
       ]),
     [entries, query],
@@ -53,7 +54,7 @@ export function Catalog({ open, entries, onClose, onOpenEntry }: Props) {
           type="search"
           value={query}
           onChange={(e) => setQuery(e.target.value)}
-          placeholder="제목 · 아티스트 · 카탈로그 번호"
+          placeholder="앨범 · 아티스트 · 수록곡 · 카탈로그 번호"
           aria-label="카탈로그 검색"
         />
         <button
@@ -94,13 +95,13 @@ export function Catalog({ open, entries, onClose, onOpenEntry }: Props) {
               onClick={() => onOpenEntry(e, filtered)}
             >
               <span className="catalog__slide-cat">{e.catalog}</span>
-              <span className="catalog__slide-title">{e.track.title}</span>
+              <span className="catalog__slide-title">{e.album.title}</span>
               <span className="catalog__slide-meta">
-                {e.track.artist} · {e.track.album} · {e.track.year}
+                {e.album.artist} · {e.album.tracks.length} tracks · {e.album.year}
               </span>
             </button>
             <span className="catalog__slide-art" aria-hidden="true">
-              <CoverArt track={e.track} />
+              <CoverArt track={e.album.cover} />
             </span>
           </div>
         ))}

@@ -1,11 +1,12 @@
 import { useEffect, useRef, useState } from "react";
-import { GENRES, CoverArt, type Track } from "@/entities/track";
+import { GENRES, CoverArt, type Album } from "@/entities/track";
 import "./detail.css";
 
 export interface OpenEntry {
-  track: Track;
+  album: Album;
   catalog: string;
   ordinal: number;
+  favoriteKey: string;
 }
 
 interface Props {
@@ -51,8 +52,8 @@ export function DetailSheet({
 
   if (!shown) return null;
 
-  const { track, catalog, ordinal } = shown;
-  const theme = GENRES[track.genre];
+  const { album, catalog, ordinal } = shown;
+  const theme = GENRES[album.genre];
 
   return (
     <div className={`detail${open ? " is-open" : ""}`}>
@@ -77,34 +78,34 @@ export function DetailSheet({
 
         <div className="detail__stamp" aria-hidden="true">
           <span>{catalog}</span>
-          <span>filed {track.year}</span>
+          <span>filed {album.year}</span>
         </div>
 
         <section
           className="detail__card"
           role="dialog"
           aria-modal="true"
-          aria-label={`${track.title} 상세`}
+          aria-label={`${album.title} 앨범 상세`}
         >
           <div className="detail__body">
             <p className="detail__head">
-              entry no.{String(ordinal).padStart(2, "0")}
+              album no.{String(ordinal).padStart(2, "0")}
               <span
                 className="detail__head-tape"
                 style={{ background: theme.bg, color: theme.ink }}
               >
-                {track.genre}
+                {album.genre}
               </span>
             </p>
-            <h1 className="detail__title">{track.title}</h1>
-            <p className="detail__artist">{track.artist}</p>
+            <h1 className="detail__title">{album.title}</h1>
+            <p className="detail__artist">{album.artist}</p>
             <p className="detail__phon">{theme.phon}</p>
             <p className="detail__def">
               <b>n.</b>
-              <span>{track.definition}</span>
+              <span>{album.description}</span>
             </p>
             <div className="detail__tags">
-              {track.tags.map((t, i) => (
+              {album.tags.map((t, i) => (
                 <span
                   key={t}
                   className="detail__tag"
@@ -116,28 +117,46 @@ export function DetailSheet({
             </div>
             <dl className="detail__meta">
               <div>
-                <dt>album</dt>
-                <dd>{track.album}</dd>
+                <dt>tracks</dt>
+                <dd>{album.tracks.length} tracks</dd>
               </div>
               <div>
                 <dt>label</dt>
-                <dd>{track.label}</dd>
+                <dd>{album.label}</dd>
               </div>
               <div>
                 <dt>year</dt>
-                <dd>{track.year}</dd>
+                <dd>{album.year}</dd>
               </div>
               <div>
-                <dt>length</dt>
-                <dd>{track.length}</dd>
+                <dt>runtime</dt>
+                <dd>{album.runtime}</dd>
               </div>
             </dl>
+            <section className="detail__tracklist">
+              <p className="detail__tracklist-head">
+                <span>tracklist</span>
+                <span>{String(album.tracks.length).padStart(2, "0")} tracks</span>
+              </p>
+              <ol className="detail__tracks" aria-label="수록곡">
+                {album.tracks.map((track, index) => (
+                  <li
+                    key={track.id}
+                    className={track.id === album.cover.id ? "is-featured" : undefined}
+                  >
+                    <span className="detail__track-no">{String(index + 1).padStart(2, "0")}</span>
+                    <span className="detail__track-title">{track.title}</span>
+                    <span className="detail__track-length">{track.length}</span>
+                  </li>
+                ))}
+              </ol>
+            </section>
             <div className="detail__actions">
               <button type="button" className="detail__play" title="곧 구현">
                 <svg viewBox="0 0 12 12" aria-hidden="true">
                   <path d="M2 1.5v9L10.5 6z" fill="currentColor" />
                 </svg>
-                미리듣기
+                앨범 듣기
               </button>
               {onToggleFavorite && (
                 <button
@@ -176,10 +195,10 @@ export function DetailSheet({
 
           <div className="detail__art">
             <div className="detail__frame detail__frame--back" aria-hidden="true">
-              <CoverArt track={track} />
+              <CoverArt track={album.cover} />
             </div>
             <div className="detail__frame">
-              <CoverArt track={track} />
+              <CoverArt track={album.cover} />
             </div>
             <span className="detail__frame-no">{catalog}</span>
           </div>

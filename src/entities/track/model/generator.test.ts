@@ -17,6 +17,13 @@ describe("generateTileTracks", () => {
     expect(generateTileTracks(0, 0)).toEqual(TRACKS);
   });
 
+  it("세션 시드가 있으면 홈 타일도 새 선곡을 만들고 같은 시드는 재현한다", () => {
+    const first = generateTileTracks(0, 0, 1234);
+    expect(first).toEqual(generateTileTracks(0, 0, 1234));
+    expect(first).not.toEqual(TRACKS);
+    expect(first).not.toEqual(generateTileTracks(0, 0, 5678));
+  });
+
   it("모든 타일을 같은 12곡의 카드 그리드로 채운다", () => {
     for (const [k, m] of [[1, 1], [-3, 2], [5, -7]] as const) {
       const n = generateTileTracks(k, m).length;

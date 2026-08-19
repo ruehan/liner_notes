@@ -1,22 +1,24 @@
-import type { GenreId, GenreTheme, Track } from "./model/types";
+import type { Album, GenreId, GenreTheme, Track } from "./model/types";
 import { GENRES, GENRE_ORDER, TRACKS, catalogNo } from "./model/data";
 import {
   generateTileTracks,
+  generateTileAlbums,
   tileCatalog,
   isHomeTile,
 } from "./model/generator";
-import { TrackCard } from "./ui/TrackCard";
+import { AlbumCard } from "./ui/TrackCard";
 import { CoverArt } from "./ui/CoverArt";
 
-export type { GenreId, GenreTheme, Track };
+export type { Album, GenreId, GenreTheme, Track };
 export {
   GENRES,
   GENRE_ORDER,
   TRACKS,
   catalogNo,
   generateTileTracks,
+  generateTileAlbums,
   tileCatalog,
   isHomeTile,
-  TrackCard,
+  AlbumCard,
   CoverArt,
 };

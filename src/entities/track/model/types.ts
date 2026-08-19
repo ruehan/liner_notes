@@ -18,3 +18,17 @@ export interface Track {
   tags: string[];
   definition: string;
 }
+
+export interface Album {
+  id: string;
+  title: string;
+  artist: string;
+  label: string;
+  year: number;
+  genre: GenreId;
+  tags: string[];
+  description: string;
+  cover: Track;
+  tracks: Track[];
+  runtime: string;
+}

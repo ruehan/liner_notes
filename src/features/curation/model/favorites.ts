@@ -2,8 +2,9 @@ const STORAGE_KEY = "liner-notes:favorites";
 
 export type FavKey = string;
 
-export function favKey(k: number, m: number, i: number): FavKey {
-  return `${k},${m}:${i}`;
+export function favKey(k: number, m: number, i: number, sessionSeed?: number): FavKey {
+  const position = `${k},${m}:${i}`;
+  return sessionSeed === undefined ? position : `${position}@${sessionSeed}`;
 }
 
 export function favKeyFromTrackId(trackId: string): FavKey | null {
@@ -18,12 +19,15 @@ export interface FavRef {
   k: number;
   m: number;
   i: number;
+  sessionSeed?: number;
 }
 
 export function parseFavKey(key: string): FavRef | null {
-  const m = /^(-?\d+),(-?\d+):(\d+)$/.exec(key);
+  const m = /^(-?\d+),(-?\d+):(\d+)(?:@(-?\d+))?$/.exec(key);
   if (!m) return null;
-  return { k: Number(m[1]), m: Number(m[2]), i: Number(m[3]) };
+  const ref: FavRef = { k: Number(m[1]), m: Number(m[2]), i: Number(m[3]) };
+  if (m[4] !== undefined) ref.sessionSeed = Number(m[4]);
+  return ref;
 }
 
 export function loadFavorites(storage: Storage = window.localStorage): FavKey[] {
