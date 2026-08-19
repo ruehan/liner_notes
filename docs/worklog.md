@@ -1,5 +1,19 @@
 # 작업 로그
 
+## 2026-08-19 — 디자인 전환: Archive Room (음악 아카이브 컨셉)
+
+- 브랜치: feat/archive-redesign
+- 한 일:
+  - 팔레트를 밤 인디고 → 오래된 종이/잉크/도장 레드로 전환, 서체 3역할 분리
+    (Fraunces / Space Grotesk / Space Mono, @fontsource 셀프호스트)
+  - 트랙 데이터에 album·label 추가, 카탈로그 번호(NLX-###) 도입
+  - 절차적 SVG 커버아트(트랙 id 시드, 4패턴) + 목록 카드 스타일 TrackCard
+  - DetailSheet를 기록 카드 스타일로 재설계(도장·종이 액자·메타 테이블)
+  - Hud 스탬프 로고, Readout 카탈로그 번호, Wall 점 그리드, Boot 스탬프 연출
+- 검증: verify.sh 통과 — 테스트 32개 통과, typecheck/lint/build 클린
+- 리뷰: 미실시
+- 관련 결정: docs/decisions/0002-디자인-방향-전환-아카이브-룸.md
+
 ## 2026-08-19 — night lexicon 실제 구현 (프로토타입 → React 앱)
 
 - 브랜치: feat/night-lexicon

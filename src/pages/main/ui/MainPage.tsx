@@ -98,7 +98,7 @@ export function MainPage() {
         onAbout={() => window.alert("about — 선곡 기준과 소개가 들어가는 자리.")}
       />
 
-      <Readout track={hoveredTrack} />
+      <Readout track={hoveredTrack} entryNo={hoverIndex} />
       <ShuffleButton onShuffle={shuffle} />
 
       <div className={`main-page__hint${hintGone ? " is-gone" : ""}`}>

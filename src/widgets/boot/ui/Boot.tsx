@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
 import "./boot.css";
 
-const WORD = "night lexicon";
+const WORD = "lexicon";
 
 interface Props {
   onDone: () => void;
@@ -21,15 +21,17 @@ export function Boot({ onDone }: Props) {
   return (
     <div className={`boot${done ? " is-done" : ""}`} aria-hidden="true">
       <div className="boot__wrap">
-        <div className="boot__disc" />
+        <div className="boot__stamp" aria-hidden="true">
+          ♪
+        </div>
         <div className="boot__mark">
           {WORD.split("").map((ch, i) => (
-            <span key={i} style={{ animationDelay: `${i * 45}ms` }}>
-              {ch === " " ? "\u00a0" : ch}
+            <span key={i} style={{ animationDelay: `${i * 60}ms` }}>
+              {ch}
             </span>
           ))}
         </div>
-        <div className="boot__sub">a personal dictionary of songs</div>
+        <div className="boot__sub">a personal music archive</div>
         <div className="boot__bar">
           <span />
         </div>

@@ -3,10 +3,11 @@
   inset: 0;
   z-index: 35;
   pointer-events: none;
-  background:
-    linear-gradient(to bottom, rgba(5, 7, 15, 0.69), rgba(5, 7, 15, 0) 20%),
-    linear-gradient(to top, rgba(5, 7, 15, 0.69), rgba(5, 7, 15, 0) 20%),
-    radial-gradient(130% 95% at 50% 50%, rgba(5, 7, 15, 0) 42%, rgba(5, 7, 15, 0.8));
+  background: radial-gradient(
+    125% 92% at 50% 46%,
+    rgba(34, 28, 18, 0) 55%,
+    rgba(34, 28, 18, 0.22) 100%
+  );
 }
 
 .main-page__hint {

@@ -124,7 +124,7 @@
 
 | 원작 | 우리 프로젝트 |
 |---|---|
-| 벽의 셀 (작품 포스터) | 트랙/앨범 카드 — 앨범 아트웍 또는 직접 고른 비주얼 |
+| 벽의 셀 (작품 포스터) | 트랙 목록 카드 — 절차적 커버아트 + 카탈로그 번호 + 제목/앨범 라벨 |
 | 필터 all / direction / motion / design | 장르 또는 무드 필터 (예: all / ambient / jazz / electronic … 4개 내외로 유지) |
 | 상세 시트 (작업 설명) | **사전 항목** — 곡 제목(대형 타이틀), 아티스트, 연도, 설명(왜 이 곡을 골랐는가), 태그(장르·무드·장면), 외부 링크(뮤비·스트리밍 ↗) |
 | 3D 릴 (작업 조각들) | 해당 곡과 연결된 조각들: 앨범 아트 변주, 관련 스틸, 파형 스냅샷 등 |
@@ -134,32 +134,40 @@
 | About | 선곡 기준, 이 사전에 대한 소개, 연락 링크 |
 | 시트 카테고리 컬러 | 장르/무드별 시트 색 세트 (배경+잉크 토큰 쌍) |
 
-### 2.2 아이디어는 상속, 비주얼은 우리 것 — "night lexicon"
+### 2.2 아이디어는 상속, 비주얼은 우리 것 — "Archive Room"
 
 원작에서 **구조적 아이디어만** 가져오고 색상·서체·모티프는 우리 것으로 재정의한다.
-가칭: **night lexicon** (밤의 음악 사전).
+
+> 변천: v1 "night lexicon"(밤 인디고 + 코럴)은 음악 아카이브라는 컨셉 대비
+> 정체성이 약하다는 평가로 폐기. v2 **Archive Room**(개인 음악 아카이브 룸)으로 전환.
+> 상세: docs/decisions/0002.
 
 **상속하는 아이디어**
 
 - 드래그 패닝 벽 + 미세 회전으로 흩뿌려진 카드.
 - 화면 가장자리의 얇은 HUD 크롬(로고·필터·about)과 readout.
-- 카테고리색 전체 화면 상세 + shuffle + 조용한 인덱스 모드.
+- 전체 화면 상세 + shuffle + (향후) 조용한 인덱스 모드.
 - 모션 철학(expo-out + 스프링, 열림은 부드럽게 닫힘은 빠르게),
   `prefers-reduced-motion` 전면 지원, 포커스 링은 액센트색.
 
-**우리만의 비주얼**
+**우리만의 비주얼 — 기록 보관실**
 
-- **색**: 암실 검정이 아닌 **깊은 밤 인디고** 배경(`#0b1020`), 크림 전경(`#eae6da`),
-  단일 액센트는 녹음 램프에서 가져온 **코럴 레드**(`#ff5233`). "단 한 가지 액센트" 규칙 유지.
-- **서체**: 디스플레이는 산세리프, 마이크로 라벨·메타는 **모노스페이스** —
-  "사전의 판권·발음 기호" 질감. 산세리프 하나로 통일했던 원작과의 의도적 차이.
-- **사전 모티프**: 항목 번호(entry no.), 발음 기호(`/ˈdʒæz/`), 품사 약어(`n.`)로 시작하는
-  정의문 스타일 설명, 장르별 발음 기호.
-- **레코드 모티프**: 로고의 회전 디스크, 상세 화면의 스택을 바이닐처럼
-  중앙 홀이 뚫린 카드들로 표현.
-- **필터**: 화이트 슬래브 대신 **모노 대문자 탭 + 코럴 슬라이딩 밑줄 + 항목 수 sup**.
-- **장르 시트**: 밤의 색조 3종 — dusk blue(#28456e), burnt amber(#6e4023),
-  deep moss(#2c5240). 각각 연한 스파인 컬러를 쌍으로 가짐.
+- **색**: 어두운 벽 대신 **오래된 종이** 배경(`#e9e1cd`), 벽면은 그보다 한 톤 어두운
+  카드보드(`#e2d8c0`)에 점 그리드. 텍스트는 진한 갈색 잉크(`#221c12`).
+  단일 액센트는 **도장 레드**(`#c8372d`) — 카탈로그 번호, 도장, 진행 바에만 사용.
+- **서체**: 디스플레이 **Fraunces**(세기말 카탈로그의 세리프), UI **Space Grotesk**,
+  기록 메타(카탈로그 번호·연도·레이블)는 **Space Mono**. 서체 3역할 분리.
+- **아카이브 모티프**: 카탈로그 번호(`NLX-001`), 장르 테이프 칩, 도장(스탬프),
+  점선 구분, 카드 위 마스킹 테이프. 발음 기호(`/ˈdʒæz/`)는 사전 모티프로 유지.
+- **카드(셀)**: 색 면 대신 **목록 카드** — 절차적 커버아트(SVG 패턴) +
+  카탈로그 번호 + 세리프 제목 + 앨범·길이 메타. 카드 하단은 종이 라벨.
+- **절차적 커버아트**: 트랙 id 시드로 링(음반 그루브)·바·파형·도트 중 하나 생성.
+  장르 테이프 색(bg) 위 잉크 색 패턴 + 도장 레드 포인트. 이미지 자산 불필요.
+- **상세 화면**: 가로 ruled 라인 종이 위에 기록 카드. 우측에 종이 액자 속
+  커버아트(뒷장 액자 하나 겹침), 우상단 도장(`NLX-### · FILED <연도>`).
+- **필터**: 모노 대문자 탭 + 도장 레드 슬라이딩 밑줄 + 항목 수 sup.
+- **장르 테이프 컬러**: 뮤트 3종 — 아카이브 블루(#3d5a80), 시에나(#a8622d),
+  모스 그린(#5c7045). 각각 짝색 잉크를 가짐.
 
 ### 2.3 음악용으로 추가·확장할 요소
 
@@ -186,41 +194,50 @@
   └─ 카탈로그 → 조용한 트랙 인덱스 (한 화면 한 곡, scroll-snap)
 ```
 
-### 2.5 토큰 — night lexicon
+### 2.5 토큰 — Archive Room
 
 ```css
 :root {
-  --bg: #0b1020;          /* 밤 인디고 */
-  --bg-deep: #070b16;     /* 스테이지 바닥 */
-  --fg: #eae6da;          /* 크림 */
-  --fg-dim: #8e93a3;
-  --fg-faint: #5a6072;
-  --accent: #ff5233;      /* 녹음 램프 코럴 — 단일 액센트 */
-  --line: rgba(234, 230, 218, .14);
+  --bg: #e9e1cd;           /* 오래된 종이 */
+  --bg-wall: #e2d8c0;      /* 벽면 카드보드 + 점 그리드 */
+  --card: #f6f1e2;         /* 목록 카드 */
+  --fg: #221c12;           /* 갈색 잉크 */
+  --fg-dim: #6e6452;
+  --fg-faint: #9d927c;
+  --accent: #c8372d;       /* 도장 레드 — 단일 액센트 */
+  --line: rgba(34, 28, 18, .22);
+  --line-soft: rgba(34, 28, 18, .12);
 
-  /* 장르 시트: bg(밤의 색조) / ink(크림 계열) / spine(연한 짝색) */
-  --ambient-bg: #28456e;    --ambient-ink: #dde8f2;    --ambient-spine: #6f93c2;
-  --jazz-bg: #6e4023;       --jazz-ink: #f5e7d3;       --jazz-spine: #d8a26a;
-  --electronic-bg: #2c5240; --electronic-ink: #dcead8; --electronic-spine: #7fb598;
+  /* 장르 테이프: bg(테이프 색) / ink(짝색) */
+  --ambient-bg: #3d5a80;    --ambient-ink: #eef2f6;
+  --jazz-bg: #a8622d;       --jazz-ink: #f9efe2;
+  --electronic-bg: #5c7045; --electronic-ink: #eff3e6;
 
-  --sans: "Helvetica Neue", Helvetica, Arial, sans-serif;
-  --mono: ui-monospace, "SF Mono", Menlo, Consolas, monospace;
+  --display: "Fraunces Variable", Georgia, serif;
+  --sans: "Space Grotesk Variable", Helvetica, Arial, sans-serif;
+  --mono: "Space Mono", ui-monospace, "SF Mono", Menlo, monospace;
 
   --t-micro: clamp(9.5px, .62vw, 11.5px);
   --t-label: clamp(11px, .8vw, 13px);
   --t-ui: clamp(12px, .92vw, 15px);
   --t-body: clamp(13px, .98vw, 16px);
   --t-lead: clamp(15px, 1.2vw, 19px);
-  --t-display: clamp(28px, 2.9vw, 50px);
-  --t-entry: clamp(64px, 9vw, 150px);   /* 사전 항목 거대 번호 */
+  --t-display: clamp(30px, 3.2vw, 56px);
+  --t-entry: clamp(64px, 9vw, 150px);   /* 거대 항목 번호 */
 
-  --r-ui: 6px; --r-media: 12px; --r-cell: 12px;
+  --r-ui: 6px; --r-media: 10px; --r-cell: 8px;
   --dur-1: .14s; --dur-2: .26s; --dur-3: .42s; --dur-4: .62s;
   --ease-out: cubic-bezier(.16, 1, .3, 1);
   --ease-in-out: cubic-bezier(.65, 0, .35, 1);
   --ease-spring: cubic-bezier(.34, 1.42, .64, 1);
+
+  --shadow-paper: 0 1px 2px rgba(34,28,18,.14), 0 16px 34px -20px rgba(34,28,18,.5);
+  --shadow-lift: 0 2px 3px rgba(34,28,18,.16), 0 30px 54px -24px rgba(34,28,18,.55);
 }
 ```
+
+메타 규칙: 카탈로그 번호·연도·레이블 등 기록 메타는 항상 `--mono` + 대문자 자간.
+곡 제목만 `--display`(Fraunces). 도장 레드는 번호·강조에만 쓰고 면(面)으로는 쓰지 않는다.
 
 프로토타입: `prototype/index.html` — 벽·HUD·필터·readout·상세 시트·shuffle·부팅 구현.
 실제 구현: `src/` (Vite + React + FSD, 구조 결정은 `docs/decisions/0001`).

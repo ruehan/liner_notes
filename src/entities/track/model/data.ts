@@ -1,33 +1,24 @@
 import type { GenreId, GenreTheme, Track } from "./types";
 
 export const GENRES: Record<GenreId, GenreTheme> = {
-  ambient: {
-    bg: "#28456e",
-    ink: "#dde8f2",
-    spine: "#6f93c2",
-    phon: "/ˈæm.bi.ənt/",
-  },
-  jazz: {
-    bg: "#6e4023",
-    ink: "#f5e7d3",
-    spine: "#d8a26a",
-    phon: "/dʒæz/",
-  },
-  electronic: {
-    bg: "#2c5240",
-    ink: "#dcead8",
-    spine: "#7fb598",
-    phon: "/ɪˌlekˈtrɒn.ɪk/",
-  },
+  ambient: { bg: "#3d5a80", ink: "#eef2f6", phon: "/ˈæm.bi.ənt/" },
+  jazz: { bg: "#a8622d", ink: "#f9efe2", phon: "/dʒæz/" },
+  electronic: { bg: "#5c7045", ink: "#eff3e6", phon: "/ɪˌlekˈtrɒn.ɪk/" },
 };
 
 export const GENRE_ORDER: GenreId[] = ["ambient", "jazz", "electronic"];
+
+export function catalogNo(index: number): string {
+  return `NLX-${String(index + 1).padStart(3, "0")}`;
+}
 
 export const TRACKS: Track[] = [
   {
     id: "an-ending",
     title: "An Ending",
     artist: "Brian Eno",
+    album: "Apollo: Atmospheres and Soundtracks",
+    label: "EG Records",
     year: 1983,
     length: "6:24",
     genre: "ambient",
@@ -39,6 +30,8 @@ export const TRACKS: Track[] = [
     id: "blue-in-green",
     title: "Blue in Green",
     artist: "Bill Evans Trio",
+    album: "Kind of Blue",
+    label: "Columbia",
     year: 1959,
     length: "5:37",
     genre: "jazz",
@@ -50,6 +43,8 @@ export const TRACKS: Track[] = [
     id: "music-for-18-musicians",
     title: "Music for 18 Musicians",
     artist: "Steve Reich",
+    album: "Music for 18 Musicians",
+    label: "ECM",
     year: 1976,
     length: "57:00",
     genre: "ambient",
@@ -61,6 +56,8 @@ export const TRACKS: Track[] = [
     id: "windowlicker",
     title: "Windowlicker",
     artist: "Aphex Twin",
+    album: "Windowlicker EP",
+    label: "Warp",
     year: 1999,
     length: "6:07",
     genre: "electronic",
@@ -72,6 +69,8 @@ export const TRACKS: Track[] = [
     id: "a-love-supreme",
     title: "A Love Supreme",
     artist: "John Coltrane",
+    album: "A Love Supreme",
+    label: "Impulse!",
     year: 1965,
     length: "32:50",
     genre: "jazz",
@@ -82,6 +81,8 @@ export const TRACKS: Track[] = [
     id: "xtal",
     title: "Xtal",
     artist: "Aphex Twin",
+    album: "Selected Ambient Works 85–92",
+    label: "Apollo",
     year: 1992,
     length: "4:53",
     genre: "electronic",
@@ -93,6 +94,8 @@ export const TRACKS: Track[] = [
     id: "music-for-airports",
     title: "Music for Airports",
     artist: "Brian Eno",
+    album: "Ambient 1: Music for Airports",
+    label: "Polydor",
     year: 1978,
     length: "17:21",
     genre: "ambient",
@@ -104,6 +107,8 @@ export const TRACKS: Track[] = [
     id: "naima",
     title: "Naima",
     artist: "John Coltrane",
+    album: "Giant Steps",
+    label: "Atlantic",
     year: 1959,
     length: "4:21",
     genre: "jazz",
@@ -115,6 +120,8 @@ export const TRACKS: Track[] = [
     id: "window-cleaner",
     title: "Window Cleaner",
     artist: "Squarepusher",
+    album: "Feed Me Weird Things",
+    label: "Rephlex",
     year: 1996,
     length: "7:04",
     genre: "electronic",
@@ -125,6 +132,8 @@ export const TRACKS: Track[] = [
     id: "thursday-afternoon",
     title: "Thursday Afternoon",
     artist: "Brian Eno",
+    album: "Thursday Afternoon",
+    label: "EG Records",
     year: 1985,
     length: "60:54",
     genre: "ambient",
@@ -135,6 +144,8 @@ export const TRACKS: Track[] = [
     id: "my-favorite-things",
     title: "My Favorite Things",
     artist: "John Coltrane",
+    album: "My Favorite Things",
+    label: "Atlantic",
     year: 1961,
     length: "13:41",
     genre: "jazz",
@@ -146,6 +157,8 @@ export const TRACKS: Track[] = [
     id: "vordhosbn",
     title: "Vordhosbn",
     artist: "Aphex Twin",
+    album: "Drukqs",
+    label: "Warp",
     year: 2001,
     length: "4:53",
     genre: "electronic",

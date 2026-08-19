@@ -2,7 +2,12 @@
   position: fixed;
   inset: 0;
   cursor: grab;
-  background: var(--bg-deep);
+  background-color: var(--bg-wall);
+  background-image: radial-gradient(
+    rgba(34, 28, 18, 0.13) 1px,
+    transparent 1.4px
+  );
+  background-size: 26px 26px;
 }
 
 .wall.is-dragging {

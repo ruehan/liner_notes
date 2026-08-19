@@ -25,44 +25,35 @@
 }
 
 .logo:hover {
-  opacity: 0.75;
+  opacity: 0.7;
 }
 
-.logo__disc {
-  width: 30px;
-  height: 30px;
-  border-radius: 50%;
-  border: 1.5px solid var(--fg);
-  position: relative;
+.logo__stamp {
   flex: none;
-  animation: disc-spin 14s linear infinite;
+  width: 34px;
+  height: 34px;
+  display: grid;
+  place-items: center;
+  border: 1.5px solid var(--accent);
+  border-radius: 4px;
+  color: var(--accent);
+  font-size: 16px;
+  transform: rotate(-4deg);
+  transition: transform var(--dur-2) var(--ease-spring);
 }
 
-.logo__disc:after {
-  content: "";
-  position: absolute;
-  left: 50%;
-  top: 50%;
-  width: 7px;
-  height: 7px;
-  margin: -3.5px 0 0 -3.5px;
-  border-radius: 50%;
-  background: var(--accent);
-}
-
-@keyframes disc-spin {
-  to {
-    transform: rotate(360deg);
-  }
+.logo:hover .logo__stamp {
+  transform: rotate(3deg);
 }
 
 .logo__text {
   display: flex;
   flex-direction: column;
-  gap: 2px;
+  gap: 3px;
 }
 
 .logo__mark {
+  font-family: var(--display);
   font-size: var(--t-mast);
   font-weight: 600;
   letter-spacing: -0.02em;
@@ -83,19 +74,18 @@
   letter-spacing: var(--tr-wide);
   text-transform: uppercase;
   padding: 9px 18px;
-  border: 1px solid var(--line);
+  border: 1px solid var(--fg);
   border-radius: 999px;
   color: var(--fg);
+  background: transparent;
   transition:
     background-color var(--dur-1),
-    color var(--dur-1),
-    border-color var(--dur-1);
+    color var(--dur-1);
 }
 
 .about-btn:hover {
   background: var(--fg);
   color: var(--bg);
-  border-color: var(--fg);
 }
 
 @media (max-width: 760px) {

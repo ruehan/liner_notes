@@ -11,7 +11,7 @@
   color: var(--bg);
   display: grid;
   place-items: center;
-  box-shadow: 0 14px 34px -12px rgba(0, 0, 0, 0.7);
+  box-shadow: 0 14px 30px -14px rgba(34, 28, 18, 0.6);
   transition:
     transform var(--dur-1) var(--ease-spring),
     background-color var(--dur-1),

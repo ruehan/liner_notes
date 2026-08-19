@@ -1,5 +1,6 @@
 import type { Track } from "../model/types";
-import { GENRES } from "../model/data";
+import { catalogNo } from "../model/data";
+import { CoverArt } from "./CoverArt";
 import "./track-card.css";
 
 interface Props {
@@ -21,23 +22,12 @@ export function TrackCard({
   onOpen,
   onHover,
 }: Props) {
-  const theme = GENRES[track.genre];
   return (
     <article
-      className={[
-        "track-card",
-        hidden && "is-hidden",
-        hot && "is-hot",
-      ]
+      className={["track-card", hidden && "is-hidden", hot && "is-hot"]
         .filter(Boolean)
         .join(" ")}
-      style={
-        {
-          ...style,
-          background: theme.bg,
-          "--spine": theme.spine,
-        } as React.CSSProperties
-      }
+      style={style}
       role="button"
       tabIndex={hidden ? -1 : 0}
       aria-label={`${track.title} — ${track.artist}`}
@@ -51,21 +41,22 @@ export function TrackCard({
       onMouseEnter={() => onHover(index)}
       onMouseLeave={() => onHover(null)}
     >
-      <div className="track-card__spine">
-        <span>{track.genre}</span>
-        <span>no.{String(index + 1).padStart(2, "0")}</span>
+      <div className="track-card__artwrap">
+        <CoverArt track={track} className="track-card__art" />
+        <span className="track-card__tape">{track.genre}</span>
       </div>
-      <div className="track-card__art">
-        <span className="track-card__mark" style={{ color: theme.spine }}>
-          {track.title[0]}
-        </span>
-      </div>
-      <div className="track-card__cap">
-        <b>{track.title}</b>
-        <span>
-          {track.artist} · {track.year}
-        </span>
-      </div>
+      <header className="track-card__head">
+        <span className="track-card__no">{catalogNo(index)}</span>
+        <h3 className="track-card__title">{track.title}</h3>
+        <p className="track-card__byline">
+          {track.artist}
+          <span className="track-card__year">{track.year}</span>
+        </p>
+      </header>
+      <footer className="track-card__foot">
+        <span>{track.album}</span>
+        <span className="track-card__len">{track.length}</span>
+      </footer>
     </article>
   );
 }
