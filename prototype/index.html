@@ -1,0 +1,480 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>night lexicon — 프로토타입</title>
+<style>
+:root{
+  --bg:#0b1020; --bg-deep:#070b16; --fg:#eae6da;
+  --fg-dim:#8e93a3; --fg-faint:#5a6072;
+  --accent:#ff5233;
+  --line:rgba(234,230,218,.14);
+  --hud-pad:clamp(14px,2.2vw,28px);
+  --sans:"Helvetica Neue",Helvetica,Arial,sans-serif;
+  --mono:ui-monospace,"SF Mono",Menlo,Consolas,monospace;
+  --t-micro:clamp(9.5px,.62vw,11.5px); --t-label:clamp(11px,.8vw,13px);
+  --t-ui:clamp(12px,.92vw,15px); --t-body:clamp(13px,.98vw,16px);
+  --t-lead:clamp(15px,1.2vw,19px); --t-display:clamp(28px,2.9vw,50px);
+  --t-chrome:clamp(12px,.85vw,14.5px); --t-mast:clamp(20px,1.85vw,29px);
+  --t-entry:clamp(64px,9vw,150px);
+  --tr-wide:.1em; --tr-wider:.16em;
+  --r-ui:6px; --r-media:12px; --r-cell:12px;
+  --dur-1:.14s; --dur-2:.26s; --dur-3:.42s; --dur-4:.62s;
+  --ease-out:cubic-bezier(.16,1,.3,1);
+  --ease-spring:cubic-bezier(.34,1.42,.64,1);
+}
+*{box-sizing:border-box}
+html,body{margin:0;height:100%;overflow:hidden;background:var(--bg);color:var(--fg);
+  font-family:var(--sans);-webkit-font-smoothing:antialiased}
+body{touch-action:none}
+button{font:inherit;color:inherit;background:none;border:0;padding:0;cursor:pointer}
+:focus-visible{outline:2px solid var(--accent);outline-offset:3px}
+
+#stage{position:fixed;inset:0;cursor:grab;background:var(--bg-deep)}
+#stage.is-dragging{cursor:grabbing}
+#world{position:absolute;top:0;left:0;transform-origin:0 0;will-change:transform}
+
+.cell{position:absolute;width:236px;aspect-ratio:1;border-radius:var(--r-cell);overflow:hidden;
+  transition:opacity var(--dur-3) var(--ease-out),transform var(--dur-3) var(--ease-out),
+  box-shadow var(--dur-2) var(--ease-out);cursor:pointer;contain:layout style paint;
+  box-shadow:0 18px 44px -22px rgba(0,0,0,.85),inset 0 0 0 1px rgba(255,255,255,.07)}
+.cell:hover{transform:rotate(0deg) scale(1.045)!important;z-index:5;
+  box-shadow:0 30px 60px -20px rgba(0,0,0,.9),inset 0 0 0 1px rgba(255,255,255,.16)}
+.cell.is-hidden{opacity:0;pointer-events:none;transform:scale(.88)!important}
+.cell.is-hot{box-shadow:0 0 0 3px var(--accent),0 30px 60px -20px rgba(0,0,0,.9)}
+.cell-spine{position:absolute;top:0;left:0;right:0;height:7px;background:var(--spine);
+  display:flex;align-items:center;justify-content:space-between;padding:0 10px}
+.cell-spine span{font-family:var(--mono);font-size:8.5px;letter-spacing:.18em;
+  color:rgba(0,0,0,.55);text-transform:uppercase}
+.cell-art{position:absolute;inset:7px 0 0;display:grid;place-items:center}
+.cell-mark{font-size:84px;font-weight:600;letter-spacing:-.05em;line-height:.9;opacity:.9}
+.cell-cap{position:absolute;left:10px;right:10px;bottom:10px;
+  font-family:var(--mono);font-size:var(--t-micro);line-height:1.5;
+  color:rgba(255,255,255,.82);letter-spacing:.01em}
+.cell-cap b{display:block;font-weight:600;color:#fff}
+.cell-cap span{opacity:.62}
+
+#vignette{position:fixed;inset:0;z-index:35;pointer-events:none;
+  background:linear-gradient(to bottom,#05070fb0,#05070f00 20%),
+  linear-gradient(to top,#05070fb0,#05070f00 20%),
+  radial-gradient(130% 95% at 50% 50%,#05070f00 42%,#05070fcc)}
+
+#hud{position:fixed;top:0;left:0;right:0;z-index:40;display:flex;align-items:center;
+  justify-content:space-between;gap:20px;padding:var(--hud-pad);pointer-events:none}
+#hud>*{pointer-events:auto}
+#logo{display:flex;align-items:center;gap:12px;color:var(--fg);text-decoration:none;
+  transition:opacity var(--dur-1)}
+#logo:hover{opacity:.75}
+.logo-disc{width:30px;height:30px;border-radius:50%;border:1.5px solid var(--fg);
+  position:relative;flex:none;animation:disc-spin 14s linear infinite}
+.logo-disc:after{content:"";position:absolute;left:50%;top:50%;width:7px;height:7px;
+  margin:-3.5px 0 0 -3.5px;border-radius:50%;background:var(--accent)}
+@keyframes disc-spin{to{transform:rotate(360deg)}}
+.logo-text{display:flex;flex-direction:column;gap:2px}
+.logo-mark{font-size:var(--t-mast);font-weight:600;letter-spacing:-.02em;line-height:1}
+.logo-sub{font-family:var(--mono);font-size:var(--t-micro);letter-spacing:var(--tr-wider);
+  text-transform:uppercase;color:var(--fg-dim)}
+
+#filters{display:flex;gap:22px;align-items:flex-end}
+#filters button{position:relative;font-family:var(--mono);font-size:var(--t-chrome);
+  font-weight:500;letter-spacing:var(--tr-wide);text-transform:uppercase;
+  color:var(--fg-dim);padding:6px 0 10px;transition:color var(--dur-1)}
+#filters button:hover{color:var(--fg)}
+#filters button.is-active{color:var(--fg)}
+#filters button sup{font-size:.72em;opacity:.55;margin-left:3px;font-variant-numeric:tabular-nums}
+#filter-bar{position:absolute;left:0;bottom:0;height:2px;background:var(--accent);
+  transition:left .42s var(--ease-spring),width .42s var(--ease-spring)}
+
+#about-btn{font-family:var(--mono);font-size:var(--t-chrome);letter-spacing:var(--tr-wide);
+  text-transform:uppercase;padding:9px 18px;border:1px solid var(--line);border-radius:999px;
+  color:var(--fg);transition:background-color var(--dur-1),color var(--dur-1),border-color var(--dur-1)}
+#about-btn:hover{background:var(--fg);color:var(--bg);border-color:var(--fg)}
+
+#readout{position:fixed;left:var(--hud-pad);bottom:var(--hud-pad);z-index:40;
+  max-width:min(48ch,62vw);pointer-events:none;
+  text-shadow:0 1px 16px rgba(5,7,15,.85);opacity:0;transform:translateY(8px);
+  transition:opacity var(--dur-2) var(--ease-out),transform var(--dur-2) var(--ease-spring)}
+#readout.is-visible{opacity:1;transform:none}
+#readout-title{display:block;font-size:var(--t-mast);font-weight:600;letter-spacing:-.03em;line-height:1.08}
+#readout-phon{display:block;font-family:var(--mono);font-size:var(--t-label);
+  color:var(--accent);margin-top:5px;letter-spacing:.03em}
+#readout-meta{display:block;font-family:var(--mono);font-size:var(--t-label);
+  letter-spacing:var(--tr-wide);color:var(--fg-dim);margin-top:3px;text-transform:uppercase}
+
+#wander{position:fixed;right:var(--hud-pad);top:50%;transform:translateY(-50%);z-index:40;
+  width:62px;height:62px;border-radius:50%;background:var(--fg);color:var(--bg);
+  display:grid;place-items:center;box-shadow:0 14px 34px -12px rgba(0,0,0,.7);
+  transition:transform var(--dur-1) var(--ease-spring),background-color var(--dur-1)}
+#wander:hover{transform:translateY(-50%) scale(1.1);background:var(--accent);color:#fff}
+#wander svg{width:24px;height:24px}
+#wander i{position:absolute;font-style:normal;font-family:var(--mono);font-size:8.5px;
+  letter-spacing:var(--tr-wider);text-transform:uppercase;bottom:-22px;left:50%;
+  transform:translateX(-50%);color:var(--fg-dim);white-space:nowrap}
+
+#detail{position:fixed;inset:0;z-index:60}
+#detail[hidden]{display:none}
+#detail-scrim{position:absolute;inset:0;background:#05070fa8;opacity:0;
+  transition:opacity var(--dur-3) var(--ease-out)}
+#detail.is-open #detail-scrim{opacity:1}
+#detail-ground{position:absolute;inset:0;z-index:0;transition:background-color var(--dur-3) var(--ease-out)}
+#detail-card{position:absolute;inset:0;z-index:2;opacity:0;transform:translateY(10px);
+  transition:opacity var(--dur-2) var(--ease-out),transform var(--dur-3) var(--ease-out);
+  display:grid;grid-template-columns:minmax(0,46ch) minmax(0,1fr);align-content:center;
+  column-gap:clamp(32px,4vw,80px);padding:0 clamp(24px,6vw,90px)}
+#detail.is-open #detail-card{opacity:1;transform:none}
+#detail-close{position:absolute;top:3.2%;left:50%;transform:translateX(-50%);z-index:20;
+  width:clamp(44px,3.8vw,56px);height:clamp(44px,3.8vw,56px);display:grid;place-items:center;
+  border-radius:50%;border:1.5px solid currentColor;opacity:0;
+  transition:opacity var(--dur-2) var(--ease-out) .18s,transform var(--dur-1)}
+#detail.is-open #detail-close{opacity:.9}
+#detail-close svg{width:46%;height:46%}
+#detail-close:hover{opacity:1;transform:translateX(-50%) scale(.88)}
+
+.d-entry-no{font-family:var(--mono);font-size:var(--t-entry);font-weight:700;line-height:.8;
+  letter-spacing:-.04em;opacity:.14;position:absolute;right:4vw;bottom:2vh;pointer-events:none}
+.d-head{font-family:var(--mono);font-size:var(--t-label);letter-spacing:var(--tr-wider);
+  text-transform:uppercase;opacity:.66;margin:0 0 14px}
+.cat-title{margin:0;font-size:var(--t-display);font-weight:600;letter-spacing:-.035em;line-height:1.04}
+.cat-phon{margin:12px 0 0;font-family:var(--mono);font-size:var(--t-lead);opacity:.8;letter-spacing:.02em}
+.cat-def{margin-top:clamp(18px,2.2vw,30px);font-size:var(--t-body);line-height:1.78;letter-spacing:.005em}
+.cat-def b{font-weight:600;font-family:var(--mono);font-size:.86em;letter-spacing:.06em;opacity:.7;margin-right:6px}
+.cat-tags{display:flex;flex-wrap:wrap;gap:6px;margin-top:clamp(16px,1.8vw,26px)}
+.tag-chip{font-family:var(--mono);font-size:var(--t-label);letter-spacing:.03em;
+  padding:5px 12px 6px;border:1px solid currentColor;border-radius:999px;opacity:.55;
+  transition:opacity var(--dur-1),transform var(--dur-1)}
+.tag-chip:hover{opacity:1;transform:translateY(-1px)}
+.cat-meta{display:flex;flex-wrap:wrap;gap:clamp(16px,2vw,30px);margin-top:clamp(18px,2.2vw,30px);
+  font-family:var(--mono);font-size:var(--t-label);letter-spacing:var(--tr-wide);text-transform:uppercase}
+.cat-meta div span{display:block;opacity:.5;margin-bottom:3px;font-size:.9em}
+.cat-play{margin-top:clamp(22px,2.6vw,34px);display:inline-flex;align-items:center;gap:10px;
+  font-family:var(--mono);font-size:var(--t-ui);font-weight:600;letter-spacing:var(--tr-wide);
+  text-transform:uppercase;padding:12px 24px;border-radius:999px;background:var(--fg);color:#101318;
+  transition:transform var(--dur-1) var(--ease-spring),background-color var(--dur-1)}
+.cat-play:hover{transform:scale(1.06);background:var(--accent);color:#fff}
+.cat-play svg{width:12px;height:12px}
+
+.detail-art{position:relative;height:min(56vh,500px);align-self:center;display:grid;place-items:center;
+  perspective:1200px}
+.art-stack{position:relative;width:min(40vh,370px);aspect-ratio:1;transform-style:preserve-3d;
+  animation:stack-sway 7s ease-in-out infinite}
+@keyframes stack-sway{0%,100%{transform:rotate(-1.4deg)}50%{transform:rotate(1.1deg)}}
+.art-card{position:absolute;inset:0;border-radius:var(--r-media);overflow:hidden;
+  transition:transform .6s var(--ease-out),opacity .4s var(--ease-out);
+  box-shadow:0 34px 80px -26px rgba(0,0,0,.75)}
+.art-card:after{content:"";position:absolute;left:50%;top:50%;width:16%;aspect-ratio:1;
+  margin:-8% 0 0 -8%;border-radius:50%;background:var(--detail-ground-color,#0b1020);
+  box-shadow:inset 0 0 0 2px rgba(0,0,0,.25)}
+
+#hint{position:fixed;left:50%;bottom:calc(var(--hud-pad) + 2px);transform:translateX(-50%);
+  z-index:36;font-family:var(--mono);font-size:var(--t-label);letter-spacing:var(--tr-wider);
+  text-transform:uppercase;color:var(--fg-faint);pointer-events:none;
+  transition:opacity var(--dur-4) var(--ease-out)}
+#hint.is-gone{opacity:0}
+
+#boot{position:fixed;inset:0;z-index:90;display:grid;place-items:center;background:var(--bg);
+  transition:opacity var(--dur-4) var(--ease-out)}
+#boot.is-done{opacity:0;pointer-events:none}
+.boot-wrap{text-align:center}
+.boot-disc{width:54px;height:54px;margin:0 auto 22px;border-radius:50%;border:1.5px solid var(--fg);
+  position:relative;animation:disc-spin 1.6s linear infinite}
+.boot-disc:after{content:"";position:absolute;left:50%;top:50%;width:10px;height:10px;
+  margin:-5px 0 0 -5px;border-radius:50%;background:var(--accent)}
+.boot-mark{font-size:var(--t-lead);font-weight:600;letter-spacing:-.01em}
+.boot-mark span{display:inline-block;opacity:0;transform:translateY(6px);
+  animation:letter-in .5s var(--ease-out) forwards}
+@keyframes letter-in{to{opacity:1;transform:none}}
+.boot-sub{margin-top:8px;font-family:var(--mono);font-size:var(--t-micro);
+  letter-spacing:var(--tr-wider);text-transform:uppercase;color:var(--fg-dim)}
+.boot-bar{width:150px;height:1px;margin:20px auto 0;background:var(--line);overflow:hidden}
+.boot-bar span{display:block;height:100%;width:0%;background:var(--accent);
+  transition:width .5s var(--ease-out)}
+
+@media(max-width:760px){
+  .cell{width:168px}
+  .cell-mark{font-size:60px}
+  #hud{flex-wrap:wrap;gap:12px}
+  #filters{order:3;width:100%;justify-content:space-between;gap:10px}
+  #about-btn{padding:8px 14px}
+  #readout{max-width:calc(100vw - 2*var(--hud-pad))}
+  #wander{top:auto;bottom:calc(var(--hud-pad) + env(safe-area-inset-bottom,0px));transform:none}
+  #wander:hover{transform:scale(1.1)}
+  #wander i{display:none}
+  #detail-card{grid-template-columns:1fr;row-gap:20px;align-content:start;
+    padding-top:15vh;overflow-y:auto;touch-action:pan-y}
+  .detail-art{height:32vh}
+  .d-entry-no{font-size:clamp(56px,16vw,90px)}
+}
+@media(prefers-reduced-motion:reduce){
+  *,*:before,*:after{animation-duration:.01ms!important;transition-duration:.01ms!important}}
+</style>
+</head>
+<body>
+
+<div id="stage"><div id="world"></div></div>
+
+<header id="hud">
+  <a id="logo" href="#">
+    <span class="logo-disc" aria-hidden="true"></span>
+    <span class="logo-text">
+      <span class="logo-mark">night lexicon</span>
+      <span class="logo-sub">a personal dictionary of songs</span>
+    </span>
+  </a>
+  <nav id="filters" style="position:relative">
+    <button type="button" data-filter="all" class="is-active">all</button>
+    <button type="button" data-filter="ambient">ambient</button>
+    <button type="button" data-filter="jazz">jazz</button>
+    <button type="button" data-filter="electronic">electronic</button>
+    <span id="filter-bar"></span>
+  </nav>
+  <button type="button" id="about-btn">about</button>
+</header>
+
+<div id="readout">
+  <span id="readout-title"></span>
+  <span id="readout-phon"></span>
+  <span id="readout-meta"></span>
+</div>
+
+<button type="button" id="wander" title="랜덤 곡으로 (R)">
+  <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 7h5l6 10h5M4 17h5l1.5-2.5M14.5 9.5 16 7h4" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"/><path d="M17.5 4.5 20 7l-2.5 2.5M17.5 14.5 20 17l-2.5 2.5" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"/></svg>
+  <i>shuffle</i>
+</button>
+<div id="hint">드래그해서 벽을 탐색하세요</div>
+<div id="vignette"></div>
+
+<div id="detail" hidden>
+  <div id="detail-scrim"></div>
+  <button type="button" id="detail-close" aria-label="닫기 (Escape)">
+    <svg viewBox="0 0 40 40"><path d="M8 8L32 32M32 8L8 32" fill="none" stroke="currentColor" stroke-width="3.4" stroke-linecap="round"/></svg>
+  </button>
+  <div id="detail-ground"></div>
+  <section id="detail-card" role="dialog" aria-modal="true">
+    <div style="position:relative">
+      <p class="d-head" id="d-head"></p>
+      <h1 class="cat-title" id="d-title"></h1>
+      <p class="cat-phon" id="d-phon"></p>
+      <p class="cat-def"><b id="d-pos">n.</b><span id="d-desc"></span></p>
+      <div class="cat-tags" id="d-tags"></div>
+      <div class="cat-meta" id="d-meta"></div>
+      <button class="cat-play" type="button">
+        <svg viewBox="0 0 12 12"><path d="M2 1.5v9L10.5 6z" fill="currentColor"/></svg>
+        미리듣기
+      </button>
+    </div>
+    <div class="detail-art"><div class="art-stack" id="d-stack"></div></div>
+    <div class="d-entry-no" id="d-no"></div>
+  </section>
+</div>
+
+<div id="boot">
+  <div class="boot-wrap">
+    <div class="boot-disc" aria-hidden="true"></div>
+    <div class="boot-mark" id="boot-word"></div>
+    <div class="boot-sub">a personal dictionary of songs</div>
+    <div class="boot-bar"><span id="boot-fill"></span></div>
+  </div>
+</div>
+
+<script>
+const GENRES = {
+  ambient:    { bg: "#28456e", ink: "#dde8f2", spine: "#6f93c2", phon: "/ˈæm.bi.ənt/" },
+  jazz:       { bg: "#6e4023", ink: "#f5e7d3", spine: "#d8a26a", phon: "/dʒæz/" },
+  electronic: { bg: "#2c5240", ink: "#dcead8", spine: "#7fb598", phon: "/ɪˌlekˈtrɒn.ɪk/" }
+};
+
+const TRACKS = [
+  { t: "An Ending", a: "Brian Eno", y: 1983, l: "6:24", g: "ambient", tags: ["drone", "새벽"], d: "앰비언트란 가구처럼 존재하면서도 무시를 견딜 수 있어야 한다는 말의 증거. 끝이라는 단어가 붙었지만 실제로는 끝나지 않는다." },
+  { t: "Blue in Green", a: "Bill Evans Trio", y: 1959, l: "5:37", g: "jazz", tags: ["ballad", "빗소리"], d: "마일스의 앨범에 실렸지만 이 곡의 온도는 에반스의 것이다. 열려 있는 화음 위에 내리는 작은 빗방울들." },
+  { t: "Music for 18 Musicians", a: "Steve Reich", y: 1976, l: "57:00", g: "ambient", tags: ["minimal", "펄스"], d: "반복이 지루해지는 지점을 지나면, 반복이 호흡이 된다. 열여덟 명이 만드는 하나의 거대한 숨." },
+  { t: "Windowlicker", a: "Aphex Twin", y: 1999, l: "6:07", g: "electronic", tags: ["idm", "글리치"], d: "일그러진 얼굴 뒤에 숨은 정밀한 설계. 불편함과 쾌감이 동시에 오는 드문 순간." },
+  { t: "A Love Supreme", a: "John Coltrane", y: 1965, l: "32:50", g: "jazz", tags: ["spiritual", "suite"], d: "네 개의 악장이 하나의 기도다. 기술이 아니라 방향에 대한 이야기." },
+  { t: "Xtal", a: "Aphex Twin", y: 1992, l: "4:53", g: "electronic", tags: ["ambient techno"], d: "전자음악이 이렇게 부드러울 수 있다는 것을 처음 안 곡. 흐릿한 보컬 샘플이 안개처럼 떠 있다." },
+  { t: "Music for Airports", a: "Brian Eno", y: 1978, l: "17:21", g: "ambient", tags: ["installation", "대기"], d: "공항을 위해 쓰였지만 결국 어떤 장소든 공항으로 만든다. 기다림을 위한 음악." },
+  { t: "Naima", a: "John Coltrane", y: 1959, l: "4:21", g: "jazz", tags: ["ballad"], d: "아내의 이름을 붙인 곡치고 이렇게 조용한 고백이 또 있을까. 색소폰이 말을 아끼는 법." },
+  { t: "Window Cleaner", a: "Squarepusher", y: 1996, l: "7:04", g: "electronic", tags: ["drill'n'bass"], d: "베이스가 계단을 뛰어내려간다. 계산된 카오스의 가장 즐거운 형태." },
+  { t: "Thursday Afternoon", a: "Brian Eno", y: 1985, l: "60:54", g: "ambient", tags: ["페인팅", "원테이크"], d: "60분짜리 하나의 붓질. 시간 개념이 달라지는 경험으로서의 음악." },
+  { t: "My Favorite Things", a: "John Coltrane", y: 1961, l: "13:41", g: "jazz", tags: ["modal", "waltz"], d: "뮤지컬 넘버를 13분 41초의 주술로 바꾸다. 소프라노 색소폰이 처음으로 말하기 시작한 순간." },
+  { t: "Vordhosbn", a: "Aphex Twin", y: 2001, l: "4:53", g: "electronic", tags: ["drum'n'bass", "piano"], d: "난폭한 비트 위에 놓인 맑은 피아노. 두 세계가 같은 방에 있는 불편하고 아름다운 광경." }
+];
+
+const world = document.getElementById("world");
+const stage = document.getElementById("stage");
+const readout = document.getElementById("readout");
+const hint = document.getElementById("hint");
+
+const W = 3400, H = 2200;
+world.style.width = W + "px";
+world.style.height = H + "px";
+
+let seed = 7;
+const rnd = () => (seed = (seed * 16807) % 2147483647) / 2147483647;
+
+const cellSize = 236, pad = 64;
+const cols = Math.ceil(W / (cellSize + pad)), rows = Math.ceil(H / (cellSize + pad));
+const spots = [];
+for (let r = 0; r < rows; r++) for (let c = 0; c < cols; c++)
+  spots.push([c * (cellSize + pad) + pad * rnd(), r * (cellSize + pad) + pad * rnd()]);
+for (let i = spots.length - 1; i > 0; i--) { const j = Math.floor(rnd() * (i + 1)); [spots[i], spots[j]] = [spots[j], spots[i]]; }
+
+let camX = 0, camY = 0;
+function clampCam() {
+  camX = Math.max(Math.min(0, camX), innerWidth - W);
+  camY = Math.max(Math.min(0, camY), innerHeight - H);
+}
+function applyCam(smooth) {
+  clampCam();
+  world.style.transition = smooth ? "transform .62s cubic-bezier(.16,1,.3,1)" : "none";
+  world.style.transform = "translate3d(" + camX + "px," + camY + "px,0)";
+}
+
+const cellEls = TRACKS.map((tr, i) => {
+  const el = document.createElement("div");
+  el.className = "cell";
+  const [x, y] = spots[i];
+  const rot = (rnd() * 10 - 5).toFixed(1);
+  const g = GENRES[tr.g];
+  el.style.left = x + "px";
+  el.style.top = y + "px";
+  el.style.transform = "rotate(" + rot + "deg)";
+  el.style.background = g.bg;
+  el.style.setProperty("--spine", g.spine);
+  el.dataset.index = i;
+  el.dataset.genre = tr.g;
+  el.dataset.x = x; el.dataset.y = y;
+  el.innerHTML =
+    '<div class="cell-spine"><span>' + tr.g + '</span><span>no.' + String(i + 1).padStart(2, "0") + '</span></div>' +
+    '<div class="cell-art"><span class="cell-mark" style="color:' + g.spine + '">' + tr.t[0] + '</span></div>' +
+    '<div class="cell-cap"><b>' + tr.t + '</b><span>' + tr.a + ' · ' + tr.y + '</span></div>';
+  el.addEventListener("click", () => { if (dragDist < 8) openDetail(i); });
+  el.addEventListener("mouseenter", () => showReadout(tr, i));
+  el.addEventListener("mouseleave", hideReadout);
+  world.appendChild(el);
+  return el;
+});
+
+function showReadout(tr, i) {
+  const g = GENRES[tr.g];
+  document.getElementById("readout-title").textContent = tr.t;
+  document.getElementById("readout-phon").textContent = g.phon;
+  document.getElementById("readout-meta").textContent = tr.a + " · " + tr.y + " · " + tr.l;
+  readout.classList.add("is-visible");
+}
+function hideReadout() { readout.classList.remove("is-visible"); }
+
+let dragging = false, sx = 0, sy = 0, ox = 0, oy = 0, dragDist = 0;
+stage.addEventListener("pointerdown", e => {
+  dragging = true; dragDist = 0;
+  sx = e.clientX; sy = e.clientY; ox = camX; oy = camY;
+  stage.classList.add("is-dragging");
+  stage.setPointerCapture(e.pointerId);
+});
+stage.addEventListener("pointermove", e => {
+  if (!dragging) return;
+  const dx = e.clientX - sx, dy = e.clientY - sy;
+  dragDist = Math.max(dragDist, Math.hypot(dx, dy));
+  camX = ox + dx; camY = oy + dy;
+  applyCam(false);
+  if (dragDist > 12) hint.classList.add("is-gone");
+});
+const endDrag = () => { dragging = false; stage.classList.remove("is-dragging"); };
+stage.addEventListener("pointerup", endDrag);
+stage.addEventListener("pointercancel", endDrag);
+
+const filterBar = document.getElementById("filter-bar");
+const filterBtns = [...document.querySelectorAll("#filters button")];
+filterBtns.forEach(btn => {
+  const n = btn.dataset.filter === "all"
+    ? TRACKS.length
+    : TRACKS.filter(t => t.g === btn.dataset.filter).length;
+  btn.innerHTML += "<sup>" + n + "</sup>";
+});
+function moveBar(btn) {
+  filterBar.style.left = btn.offsetLeft + "px";
+  filterBar.style.width = (btn.offsetWidth - 0) + "px";
+}
+moveBar(filterBtns[0]);
+
+filterBtns.forEach(btn => btn.addEventListener("click", () => {
+  filterBtns.forEach(b => b.classList.toggle("is-active", b === btn));
+  moveBar(btn);
+  const f = btn.dataset.filter;
+  cellEls.forEach(el => el.classList.toggle("is-hidden", f !== "all" && el.dataset.genre !== f));
+}));
+
+const detail = document.getElementById("detail");
+const detailGround = document.getElementById("detail-ground");
+function openDetail(i) {
+  const tr = TRACKS[i], g = GENRES[tr.g];
+  detailGround.style.background = g.bg;
+  detail.style.color = g.ink;
+  detail.style.setProperty("--detail-ground-color", g.bg);
+  document.getElementById("d-head").textContent =
+    "entry no." + String(i + 1).padStart(2, "0") + " — " + tr.g;
+  document.getElementById("d-title").textContent = tr.t;
+  document.getElementById("d-phon").textContent = "/" + tr.a.toLowerCase().replace(/\s+/g, " ") + "/ · genre " + g.phon;
+  document.getElementById("d-desc").textContent = tr.d;
+  document.getElementById("d-tags").innerHTML =
+    tr.tags.map(t => '<span class="tag-chip">' + t + '</span>').join("");
+  document.getElementById("d-meta").innerHTML =
+    "<div><span>year</span>" + tr.y + "</div>" +
+    "<div><span>length</span>" + tr.l + "</div>" +
+    "<div><span>genre</span>" + tr.g + "</div>";
+  document.getElementById("d-no").textContent = String(i + 1).padStart(2, "0");
+  const stack = document.getElementById("d-stack");
+  stack.innerHTML = [0, 1, 2].map(n =>
+    '<div class="art-card" style="background:' + (n === 1 ? "#131826" : g.bg) +
+    ';transform:translateZ(' + (-n * 64) + 'px) rotate(' + (n * 5 - 5) + 'deg);opacity:' + (1 - n * .26) + '">' +
+    '<div class="cell-art"><span class="cell-mark" style="color:' + (n === 1 ? "#eae6da" : g.spine) +
+    ';font-size:64px">' + tr.t[0] + '</span></div></div>').join("");
+  detail.hidden = false;
+  requestAnimationFrame(() => requestAnimationFrame(() => detail.classList.add("is-open")));
+  hideReadout();
+}
+function closeDetail() {
+  detail.classList.remove("is-open");
+  setTimeout(() => { detail.hidden = true; }, 420);
+}
+document.getElementById("detail-close").addEventListener("click", closeDetail);
+document.getElementById("detail-scrim").addEventListener("click", closeDetail);
+
+document.getElementById("wander").addEventListener("click", shuffle);
+function shuffle() {
+  const visible = cellEls.filter(el => !el.classList.contains("is-hidden"));
+  const el = visible[Math.floor(Math.random() * visible.length)];
+  const x = +el.dataset.x, y = +el.dataset.y;
+  camX = -x + innerWidth / 2 - 118;
+  camY = -y + innerHeight / 2 - 118;
+  applyCam(true);
+  el.classList.add("is-hot");
+  setTimeout(() => el.classList.remove("is-hot"), 1600);
+  showReadout(TRACKS[+el.dataset.index], +el.dataset.index);
+}
+
+document.getElementById("about-btn").addEventListener("click", () =>
+  alert("about — 선곡 기준과 소개가 들어가는 자리."));
+
+addEventListener("keydown", e => {
+  if (e.key === "Escape") closeDetail();
+  if ((e.key === "r" || e.key === "R") && !detail.classList.contains("is-open")) shuffle();
+});
+addEventListener("resize", () => applyCam(false));
+
+camX = -(W - innerWidth) / 2;
+camY = -(H - innerHeight) / 2;
+applyCam(false);
+
+const bootWord = document.getElementById("boot-word");
+"night lexicon".split("").forEach((ch, i) => {
+  const s = document.createElement("span");
+  s.textContent = ch === " " ? "\u00a0" : ch;
+  s.style.animationDelay = (i * 45) + "ms";
+  bootWord.appendChild(s);
+});
+requestAnimationFrame(() => { document.getElementById("boot-fill").style.width = "100%"; });
+setTimeout(() => { document.getElementById("boot").classList.add("is-done"); }, 1000);
+setTimeout(() => hint.classList.add("is-gone"), 6000);
+</script>
+</body>
+</html>
