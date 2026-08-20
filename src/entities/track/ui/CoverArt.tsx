@@ -1,4 +1,5 @@
 import { createRng } from "@/shared/lib";
+import { useState } from "react";
 import type { GenreTheme, Track } from "../model/types";
 import { GENRES } from "../model/data";
 
@@ -13,15 +14,28 @@ function hashId(id: string): number {
 interface Props {
   track: Track;
   className?: string;
+  imageUrl?: string;
 }
 
 type Pattern = "rings" | "bars" | "waves" | "dots";
 const PATTERNS: Pattern[] = ["rings", "bars", "waves", "dots"];
 
-export function CoverArt({ track, className }: Props) {
+export function CoverArt({ track, className, imageUrl }: Props) {
+  const [imageFailed, setImageFailed] = useState(false);
   const theme = GENRES[track.genre];
   const seed = hashId(track.id);
   const pattern = PATTERNS[seed % PATTERNS.length];
+
+  if (imageUrl && !imageFailed) {
+    return (
+      <img
+        className={className}
+        src={imageUrl}
+        alt=""
+        onError={() => setImageFailed(true)}
+      />
+    );
+  }
 
   return (
     <svg

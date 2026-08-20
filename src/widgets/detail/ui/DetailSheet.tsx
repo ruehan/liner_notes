@@ -104,17 +104,19 @@ export function DetailSheet({
               <b>n.</b>
               <span>{album.description}</span>
             </p>
-            <div className="detail__tags">
-              {album.tags.map((t, i) => (
-                <span
-                  key={t}
-                  className="detail__tag"
-                  style={{ transform: `rotate(${i % 2 ? 1.2 : -1.4}deg)` }}
-                >
-                  {t}
-                </span>
-              ))}
-            </div>
+            {album.tags.length > 0 && (
+              <div className="detail__tags">
+                {album.tags.map((t, i) => (
+                  <span
+                    key={t}
+                    className="detail__tag"
+                    style={{ transform: `rotate(${i % 2 ? 1.2 : -1.4}deg)` }}
+                  >
+                    {t}
+                  </span>
+                ))}
+              </div>
+            )}
             <dl className="detail__meta">
               <div>
                 <dt>tracks</dt>
@@ -195,10 +197,10 @@ export function DetailSheet({
 
           <div className="detail__art">
             <div className="detail__frame detail__frame--back" aria-hidden="true">
-              <CoverArt track={album.cover} />
+              <CoverArt track={album.cover} imageUrl={album.coverUrl} />
             </div>
             <div className="detail__frame">
-              <CoverArt track={album.cover} />
+              <CoverArt track={album.cover} imageUrl={album.coverUrl} />
             </div>
             <span className="detail__frame-no">{catalog}</span>
           </div>

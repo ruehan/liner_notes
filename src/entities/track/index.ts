@@ -6,6 +6,7 @@ import {
   tileCatalog,
   isHomeTile,
 } from "./model/generator";
+import { fetchFeaturedAlbums } from "./api/featured-albums";
 import { AlbumCard } from "./ui/TrackCard";
 import { CoverArt } from "./ui/CoverArt";
 
@@ -19,6 +20,7 @@ export {
   generateTileAlbums,
   tileCatalog,
   isHomeTile,
+  fetchFeaturedAlbums,
   AlbumCard,
   CoverArt,
 };

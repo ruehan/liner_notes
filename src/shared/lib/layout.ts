@@ -127,27 +127,30 @@ export function generateMosaicSpots(
   world: WorldConfig = WORLD,
 ): MosaicSpot[] {
   if (count <= 0) return [];
-  if (count !== MOSAIC_CARD_COUNT) {
-    throw new Error(
-      `mosaic layout requires ${MOSAIC_CARD_COUNT} cards, received ${count}`,
-    );
-  }
+  const aspects = MOSAIC_ASPECTS.slice(0, Math.min(count, MOSAIC_CARD_COUNT));
+  const rowCount = Math.min(MOSAIC_ROW_COUNT, Math.ceil(aspects.length / 3));
 
-  const rows = justifiedRows(MOSAIC_ASPECTS, MOSAIC_ROW_COUNT);
-  const spots: MosaicSpot[] = Array.from({ length: count });
-  let y = 0;
+  const rows = justifiedRows(aspects, rowCount);
+  const spots: MosaicSpot[] = Array.from({ length: aspects.length });
+  const fullWidthHeight = justifiedHeight(aspects, world.width, rowCount);
+  const layoutWidth = fullWidthHeight > world.height
+    ? world.width * (world.height / fullWidthHeight)
+    : world.width;
+  const mosaicHeight = justifiedHeight(aspects, layoutWidth, rowCount);
+  const xOffset = (world.width - layoutWidth) / 2;
+  let y = Math.max(0, (world.height - mosaicHeight) / 2);
 
   for (let rowIndex = 0; rowIndex < rows.length; rowIndex++) {
     const row = rows[rowIndex];
-    const height = world.width / row.aspect;
-    let x = 0;
+    const height = layoutWidth / row.aspect;
+    let x = xOffset;
 
     row.indices.forEach((index, columnIndex) => {
       const isFirst = columnIndex === 0;
       const isLast = columnIndex === row.indices.length - 1;
       const isTop = rowIndex === 0;
       const isBottom = rowIndex === rows.length - 1;
-      const width = isLast ? world.width - x : MOSAIC_ASPECTS[index] * height;
+      const width = isLast ? xOffset + layoutWidth - x : aspects[index] * height;
       spots[index] = {
         x: x - (isFirst ? 0 : MOSAIC_BLEED),
         y: y - (isTop ? 0 : MOSAIC_BLEED),

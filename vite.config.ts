@@ -7,6 +7,9 @@ const root = dirname(fileURLToPath(import.meta.url));
 
 export default defineConfig({
   plugins: [react()],
+  // Accept the public naming convention already used in the project’s Supabase
+  // settings. Unprefixed SUPABASE_* variables remain server-only.
+  envPrefix: ["VITE_", "NEXT_PUBLIC_"],
   resolve: {
     alias: {
       "@": resolve(root, "src"),

@@ -101,7 +101,7 @@ export function Catalog({ open, entries, onClose, onOpenEntry }: Props) {
               </span>
             </button>
             <span className="catalog__slide-art" aria-hidden="true">
-              <CoverArt track={e.album.cover} />
+              <CoverArt track={e.album.cover} imageUrl={e.album.coverUrl} />
             </span>
           </div>
         ))}

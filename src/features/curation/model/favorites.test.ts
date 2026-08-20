@@ -1,5 +1,6 @@
 import { describe, expect, it, beforeEach } from "vitest";
 import {
+  databaseFavKey,
   favKey,
   favKeyFromTrackId,
   loadFavorites,
@@ -28,6 +29,12 @@ describe("favKey / parseFavKey", () => {
     const key = favKey(0, 0, 4, 712_340);
     expect(key).toBe("0,0:4@712340");
     expect(parseFavKey(key)).toEqual({ k: 0, m: 0, i: 4, sessionSeed: 712_340 });
+  });
+
+  it("DB 앨범 키는 타일 좌표와 무관하게 안정적으로 찾는다", () => {
+    const key = databaseFavKey("a5f890ef-25e0-4b8b-9f1c-6e0d030760bd");
+    expect(key).toBe("album:a5f890ef-25e0-4b8b-9f1c-6e0d030760bd");
+    expect(parseFavKey(key)).toEqual({ albumId: "a5f890ef-25e0-4b8b-9f1c-6e0d030760bd" });
   });
 
   it("이상한 문자열은 null", () => {

@@ -7,6 +7,11 @@ export function favKey(k: number, m: number, i: number, sessionSeed?: number): F
   return sessionSeed === undefined ? position : `${position}@${sessionSeed}`;
 }
 
+/** Stable key for an album that comes from the database rather than a generated tile. */
+export function databaseFavKey(albumId: string): FavKey {
+  return `album:${albumId}`;
+}
+
 export function favKeyFromTrackId(trackId: string): FavKey | null {
   const parts = trackId.split(":");
   if (parts.length !== 3) return null;
@@ -15,17 +20,26 @@ export function favKeyFromTrackId(trackId: string): FavKey | null {
   return favKey(k, m, i);
 }
 
-export interface FavRef {
+export interface TileFavRef {
   k: number;
   m: number;
   i: number;
   sessionSeed?: number;
 }
 
+export interface DatabaseFavRef {
+  albumId: string;
+}
+
+export type FavRef = TileFavRef | DatabaseFavRef;
+
 export function parseFavKey(key: string): FavRef | null {
+  const databaseMatch = /^album:(.+)$/.exec(key);
+  if (databaseMatch) return { albumId: databaseMatch[1] };
+
   const m = /^(-?\d+),(-?\d+):(\d+)(?:@(-?\d+))?$/.exec(key);
   if (!m) return null;
-  const ref: FavRef = { k: Number(m[1]), m: Number(m[2]), i: Number(m[3]) };
+  const ref: TileFavRef = { k: Number(m[1]), m: Number(m[2]), i: Number(m[3]) };
   if (m[4] !== undefined) ref.sessionSeed = Number(m[4]);
   return ref;
 }

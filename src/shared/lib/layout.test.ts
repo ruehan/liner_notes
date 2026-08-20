@@ -97,9 +97,16 @@ describe("generateMosaicSpots", () => {
     expect(MOSAIC_ASPECTS).toHaveLength(12);
   });
 
-  it("필요한 카드 수가 아닌 경우 명확히 실패한다", () => {
-    expect(() => generateMosaicSpots(11)).toThrow(
-      "mosaic layout requires 12 cards",
-    );
+  it("DB 앨범이 일부만 있을 때도 가변 모자이크를 만든다", () => {
+    for (const count of [0, 1, 4, 11]) {
+      const spots = generateMosaicSpots(count);
+      expect(spots).toHaveLength(count);
+      for (const spot of spots) {
+        expect(spot.x).toBeGreaterThanOrEqual(0);
+        expect(spot.y).toBeGreaterThanOrEqual(0);
+        expect(spot.x + spot.width).toBeLessThanOrEqual(WORLD.width + 0.001);
+        expect(spot.y + spot.height).toBeLessThanOrEqual(WORLD.height + 0.001);
+      }
+    }
   });
 });

@@ -6,7 +6,6 @@ interface Props {
   album: Album;
   catalog: string;
   ordinal: number;
-  hidden: boolean;
   hot: boolean;
   favorited: boolean;
   style: React.CSSProperties;
@@ -20,7 +19,6 @@ export function AlbumCard({
   album,
   catalog,
   ordinal,
-  hidden,
   hot,
   favorited,
   style,
@@ -31,12 +29,12 @@ export function AlbumCard({
 }: Props) {
   return (
     <article
-      className={["track-card", hidden && "is-hidden", hot && "is-hot"]
+      className={["track-card", hot && "is-hot"]
         .filter(Boolean)
         .join(" ")}
       style={style}
       role="button"
-      tabIndex={hidden ? -1 : 0}
+      tabIndex={0}
       aria-label={`${album.title} — ${album.artist}`}
       onClick={onOpen}
       onKeyDown={(e) => {
@@ -66,7 +64,7 @@ export function AlbumCard({
       }}
     >
       <div className="track-card__artwrap">
-        <CoverArt track={album.cover} className="track-card__art" />
+        <CoverArt track={album.cover} imageUrl={album.coverUrl} className="track-card__art" />
         <span className="track-card__tape">{album.genre}</span>
         <button
           type="button"

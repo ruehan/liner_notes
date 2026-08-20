@@ -17,6 +17,9 @@ export interface Track {
   genre: GenreId;
   tags: string[];
   definition: string;
+  youtubeVideoId?: string;
+  youtubeStartSeconds?: number;
+  youtubeEndSeconds?: number;
 }
 
 export interface Album {
@@ -31,4 +34,5 @@ export interface Album {
   cover: Track;
   tracks: Track[];
   runtime: string;
+  coverUrl?: string;
 }

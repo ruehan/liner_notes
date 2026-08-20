@@ -105,16 +105,6 @@
 }
 
 @media (max-width: 760px) {
-  .hud {
-    flex-wrap: wrap;
-    gap: 12px;
-  }
-
-  .hud__filters {
-    order: 3;
-    width: 100%;
-  }
-
   .logo__mark {
     font-size: var(--t-chrome);
   }

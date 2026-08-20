@@ -4,16 +4,32 @@ import { generateTileAlbums } from "@/entities/track";
 import { saveFavorites } from "@/features/curation";
 import { MainPage } from "./MainPage";
 
+const featuredAlbumsMock = vi.hoisted(() => vi.fn());
+
+vi.mock("@/entities/track/api/featured-albums", () => ({
+  fetchFeaturedAlbums: featuredAlbumsMock,
+}));
+
 const SESSION_SEED = Math.floor(0.5 * 2_147_483_647);
 const HOME_ALBUMS = generateTileAlbums(0, 0, SESSION_SEED);
+const DATABASE_ALBUMS = HOME_ALBUMS.map((album, index) => ({
+  ...album,
+  id: `database-${index}`,
+}));
 
 function firstCard(title: string, artist: string) {
   return screen.getAllByLabelText(`${title} — ${artist}`)[0];
 }
 
+async function renderLoadedPage() {
+  render(<MainPage />);
+  await screen.findByLabelText(`${DATABASE_ALBUMS[0].title} — ${DATABASE_ALBUMS[0].artist}`);
+}
+
 beforeEach(() => {
   window.localStorage.clear();
   vi.spyOn(Math, "random").mockReturnValue(0.5);
+  featuredAlbumsMock.mockReset().mockResolvedValue(DATABASE_ALBUMS);
 });
 
 afterEach(() => {
@@ -21,32 +37,43 @@ afterEach(() => {
 });
 
 describe("MainPage", () => {
-  it("모든 앨범 카드와 필터 탭을 렌더한다", () => {
+  it("Supabase의 featured 앨범 12개를 홈 타일에 반영한다", async () => {
+    featuredAlbumsMock.mockResolvedValue(DATABASE_ALBUMS);
     render(<MainPage />);
-    for (const album of HOME_ALBUMS) {
-      expect(firstCard(album.title, album.artist)).toBeInTheDocument();
-    }
-    expect(screen.getByRole("button", { name: /^all/ })).toHaveAttribute(
-      "aria-pressed",
-      "true",
+
+    await waitFor(() =>
+      expect(
+        screen.getByLabelText(`${DATABASE_ALBUMS[0].title} — ${DATABASE_ALBUMS[0].artist}`),
+      ).toBeInTheDocument(),
     );
   });
 
-  it("장르 필터는 해당 장르만 남기고 숨긴다", () => {
+  it("DB 앨범이 일부만 있으면 해당 앨범만 홈에 표시한다", async () => {
+    featuredAlbumsMock.mockResolvedValue([DATABASE_ALBUMS[0]]);
     render(<MainPage />);
-    fireEvent.click(screen.getByRole("button", { name: /^jazz/ }));
 
-    const jazzAlbum = HOME_ALBUMS.find((album) => album.genre === "jazz")!;
-    const otherAlbum = HOME_ALBUMS.find((album) => album.genre !== "jazz")!;
-    const jazzCard = firstCard(jazzAlbum.title, jazzAlbum.artist);
-    const otherCard = firstCard(otherAlbum.title, otherAlbum.artist);
-    expect(jazzCard.className).not.toContain("is-hidden");
-    expect(otherCard.className).toContain("is-hidden");
+    await waitFor(() =>
+      expect(
+        screen.getByLabelText(`${DATABASE_ALBUMS[0].title} — ${DATABASE_ALBUMS[0].artist}`),
+      ).toBeInTheDocument(),
+    );
+    expect(screen.getByRole("button", { name: /^index/ })).toHaveTextContent("1");
+    expect(
+      screen.queryByLabelText(`${DATABASE_ALBUMS[1].title} — ${DATABASE_ALBUMS[1].artist}`),
+    ).not.toBeInTheDocument();
+  });
+
+  it("DB 앨범 카드만 렌더하고 장르 필터는 표시하지 않는다", async () => {
+    await renderLoadedPage();
+    for (const album of DATABASE_ALBUMS) {
+      expect(firstCard(album.title, album.artist)).toBeInTheDocument();
+    }
+    expect(screen.queryByRole("button", { name: /^all/ })).not.toBeInTheDocument();
   });
 
   it("앨범 카드를 클릭하면 수록곡 모달이 열리고 Escape로 닫힌다", async () => {
-    render(<MainPage />);
-    const album = HOME_ALBUMS[0];
+    await renderLoadedPage();
+    const album = DATABASE_ALBUMS[0];
     fireEvent.click(firstCard(album.title, album.artist));
 
     const dialog = await screen.findByRole("dialog");
@@ -62,9 +89,9 @@ describe("MainPage", () => {
     );
   });
 
-  it("수집 토글이 동작하고 홈 선곡은 이미 인덱스에 있다", () => {
-    render(<MainPage />);
-    const album = HOME_ALBUMS[0];
+  it("수집 토글이 동작하고 DB 앨범은 이미 인덱스에 있다", async () => {
+    await renderLoadedPage();
+    const album = DATABASE_ALBUMS[0];
     const card = firstCard(album.title, album.artist);
     fireEvent.click(within(card).getByRole("button", { name: "수집에 추가" }));
     expect(
@@ -75,21 +102,21 @@ describe("MainPage", () => {
     );
   });
 
-  it("다른 타일의 수집 기록이 인덱스에 표시된다", () => {
+  it("DB에 없는 타일 수집 기록은 인덱스에 표시하지 않는다", async () => {
     saveFavorites(["1,0:0"]);
-    render(<MainPage />);
+    await renderLoadedPage();
     expect(screen.getByRole("button", { name: /^index/ })).toHaveTextContent(
-      "13",
+      "12",
     );
     fireEvent.click(screen.getByRole("button", { name: /^index/ }));
-    expect(screen.getByText("LNR-1.0-01")).toBeInTheDocument();
+    expect(screen.queryByText("LNR-1.0-01")).not.toBeInTheDocument();
   });
 
   it("카탈로그에서 항목을 클릭하면 상세 모달이 열린다", async () => {
-    render(<MainPage />);
+    await renderLoadedPage();
     fireEvent.click(screen.getByRole("button", { name: /^index/ }));
 
-    const album = HOME_ALBUMS[1];
+    const album = DATABASE_ALBUMS[1];
     const slideTitle = screen
       .getAllByText(album.title)
       .find((el) => el.className.includes("catalog__slide-title"));
@@ -101,7 +128,7 @@ describe("MainPage", () => {
   });
 
   it("순서대로 듣기로 열어 next 버튼으로 이동한다", async () => {
-    render(<MainPage />);
+    await renderLoadedPage();
     fireEvent.click(screen.getByRole("button", { name: /^index/ }));
     fireEvent.click(screen.getByRole("button", { name: /순서대로 듣기/ }));
 
@@ -110,12 +137,12 @@ describe("MainPage", () => {
 
     fireEvent.click(screen.getByRole("button", { name: /^next/ }));
     await waitFor(() =>
-      expect(dialog).toHaveTextContent(HOME_ALBUMS[1].title),
+      expect(dialog).toHaveTextContent(DATABASE_ALBUMS[1].title),
     );
   });
 
-  it("about 시트를 열고 닫는다", () => {
-    render(<MainPage />);
+  it("about 시트를 열고 닫는다", async () => {
+    await renderLoadedPage();
     fireEvent.click(screen.getByRole("button", { name: /^about/ }));
     expect(screen.getByText("about this archive")).toBeInTheDocument();
 

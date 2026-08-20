@@ -195,10 +195,12 @@
   box-shadow: var(--shadow-paper);
 }
 
-.catalog__slide-art svg {
+.catalog__slide-art svg,
+.catalog__slide-art img {
   width: 100%;
   height: 100%;
   display: block;
+  object-fit: cover;
 }
 
 .catalog__empty {
