@@ -1,5 +1,12 @@
 import { useEffect, useRef, useState } from "react";
-import { GENRES, CoverArt, type Album } from "@/entities/track";
+import YouTube, { type YouTubeProps } from "react-youtube";
+import {
+  GENRES,
+  CoverArt,
+  normalizeYouTubeVideoId,
+  type Album,
+  type Track,
+} from "@/entities/track";
 import "./detail.css";
 
 export interface OpenEntry {
@@ -19,6 +26,33 @@ interface Props {
   onNext?: () => void;
 }
 
+function youtubeOptions(track: Track): YouTubeProps["opts"] {
+  return {
+    width: "100%",
+    height: "100%",
+    playerVars: {
+      autoplay: 1,
+      controls: 1,
+      playsinline: 1,
+      rel: 0,
+      ...(track.youtubeStartSeconds !== undefined
+        ? { start: track.youtubeStartSeconds }
+        : {}),
+      ...(track.youtubeEndSeconds !== undefined
+        ? { end: track.youtubeEndSeconds }
+        : {}),
+    },
+  };
+}
+
+function youtubeErrorMessage(code: number): string {
+  if (code === 2) return "YouTube 영상 ID 형식이 올바르지 않습니다.";
+  if (code === 5) return "현재 브라우저에서 이 영상을 재생할 수 없습니다.";
+  if (code === 100) return "삭제되었거나 비공개 처리된 영상입니다.";
+  if (code === 101 || code === 150) return "게시자가 외부 사이트 재생을 허용하지 않은 영상입니다.";
+  return "YouTube 재생기를 불러오지 못했습니다. 잠시 후 다시 시도해 주세요.";
+}
+
 export function DetailSheet({
   entry,
   favorited = false,
@@ -30,11 +64,17 @@ export function DetailSheet({
 }: Props) {
   const [shown, setShown] = useState<OpenEntry | null>(null);
   const [open, setOpen] = useState(false);
+  const [playingTrack, setPlayingTrack] = useState<Track | null>(null);
+  const [playerError, setPlayerError] = useState<string | null>(null);
+  const [playerReady, setPlayerReady] = useState(false);
   const closing = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   useEffect(() => {
     if (entry) {
       if (closing.current) clearTimeout(closing.current);
+      setPlayingTrack(null);
+      setPlayerError(null);
+      setPlayerReady(false);
       setShown(entry);
       const raf = requestAnimationFrame(() =>
         requestAnimationFrame(() => setOpen(true)),
@@ -54,6 +94,19 @@ export function DetailSheet({
 
   const { album, catalog, ordinal } = shown;
   const theme = GENRES[album.genre];
+  const firstPlayableTrack = album.tracks.find((track) =>
+    normalizeYouTubeVideoId(track.youtubeVideoId),
+  );
+  const playingVideoId = playingTrack
+    ? normalizeYouTubeVideoId(playingTrack.youtubeVideoId)
+    : undefined;
+
+  const startPlayback = (track: Track) => {
+    if (!normalizeYouTubeVideoId(track.youtubeVideoId)) return;
+    setPlayerError(null);
+    setPlayerReady(false);
+    setPlayingTrack(track);
+  };
 
   return (
     <div className={`detail${open ? " is-open" : ""}`}>
@@ -141,24 +194,49 @@ export function DetailSheet({
                 <span>{String(album.tracks.length).padStart(2, "0")} tracks</span>
               </p>
               <ol className="detail__tracks" aria-label="수록곡">
-                {album.tracks.map((track, index) => (
-                  <li
-                    key={track.id}
-                    className={track.id === album.cover.id ? "is-featured" : undefined}
-                  >
-                    <span className="detail__track-no">{String(index + 1).padStart(2, "0")}</span>
-                    <span className="detail__track-title">{track.title}</span>
-                    <span className="detail__track-length">{track.length}</span>
-                  </li>
-                ))}
+                {album.tracks.map((track, index) => {
+                  const videoId = normalizeYouTubeVideoId(track.youtubeVideoId);
+
+                  return (
+                    <li
+                      key={track.id}
+                      className={track.id === playingTrack?.id ? "is-playing" : undefined}
+                    >
+                      <button
+                        type="button"
+                        className="detail__track"
+                        disabled={!videoId}
+                        onClick={() => startPlayback(track)}
+                        aria-label={
+                          videoId
+                            ? `${track.title} 재생`
+                            : `${track.title} — YouTube 영상 미등록`
+                        }
+                      >
+                        <span className="detail__track-no">{String(index + 1).padStart(2, "0")}</span>
+                        <span className="detail__track-title">
+                          {track.title}
+                          {videoId && <span aria-hidden="true"> ▶</span>}
+                        </span>
+                        <span className="detail__track-length">{track.length}</span>
+                      </button>
+                    </li>
+                  );
+                })}
               </ol>
             </section>
             <div className="detail__actions">
-              <button type="button" className="detail__play" title="곧 구현">
+              <button
+                type="button"
+                className="detail__play"
+                disabled={!firstPlayableTrack}
+                onClick={() => firstPlayableTrack && startPlayback(firstPlayableTrack)}
+                title={firstPlayableTrack ? "YouTube에서 첫 수록곡 재생" : "YouTube 영상 ID가 필요합니다"}
+              >
                 <svg viewBox="0 0 12 12" aria-hidden="true">
                   <path d="M2 1.5v9L10.5 6z" fill="currentColor" />
                 </svg>
-                앨범 듣기
+                {firstPlayableTrack ? "앨범 듣기" : "재생 정보 없음"}
               </button>
               {onToggleFavorite && (
                 <button
@@ -196,13 +274,47 @@ export function DetailSheet({
           </div>
 
           <div className="detail__art">
-            <div className="detail__frame detail__frame--back" aria-hidden="true">
-              <CoverArt track={album.cover} imageUrl={album.coverUrl} />
-            </div>
-            <div className="detail__frame">
-              <CoverArt track={album.cover} imageUrl={album.coverUrl} />
-            </div>
-            <span className="detail__frame-no">{catalog}</span>
+            {playingTrack && playingVideoId ? (
+              <section className="detail__player" aria-label="YouTube 재생기">
+                <YouTube
+                  key={playingTrack.id}
+                  title={`${playingTrack.title} YouTube 재생`}
+                  videoId={playingVideoId}
+                  className="detail__youtube"
+                  iframeClassName="detail__youtube-frame"
+                  opts={youtubeOptions(playingTrack)}
+                  onReady={() => setPlayerReady(true)}
+                  onError={(event) => {
+                    setPlayerReady(false);
+                    setPlayerError(youtubeErrorMessage(event.data));
+                  }}
+                />
+                {!playerReady && !playerError && (
+                  <p className="detail__player-loading">YouTube 재생기 불러오는 중…</p>
+                )}
+                {playerError && <p className="detail__player-error" role="alert">{playerError}</p>}
+                <div className="detail__player-meta">
+                  <span>now playing · {playingTrack.title}</span>
+                  <button type="button" onClick={() => {
+                    setPlayerReady(false);
+                    setPlayerError(null);
+                    setPlayingTrack(null);
+                  }}>
+                    재생 닫기
+                  </button>
+                </div>
+              </section>
+            ) : (
+              <>
+                <div className="detail__frame detail__frame--back" aria-hidden="true">
+                  <CoverArt track={album.cover} imageUrl={album.coverUrl} />
+                </div>
+                <div className="detail__frame">
+                  <CoverArt track={album.cover} imageUrl={album.coverUrl} />
+                </div>
+                <span className="detail__frame-no">{catalog}</span>
+              </>
+            )}
           </div>
 
           <div className="detail__entry-no" aria-hidden="true">

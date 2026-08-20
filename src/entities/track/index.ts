@@ -7,6 +7,7 @@ import {
   isHomeTile,
 } from "./model/generator";
 import { fetchFeaturedAlbums } from "./api/featured-albums";
+import { normalizeYouTubeVideoId } from "./lib/normalize-youtube-video-id";
 import { AlbumCard } from "./ui/TrackCard";
 import { CoverArt } from "./ui/CoverArt";
 
@@ -21,6 +22,7 @@ export {
   tileCatalog,
   isHomeTile,
   fetchFeaturedAlbums,
+  normalizeYouTubeVideoId,
   AlbumCard,
   CoverArt,
 };

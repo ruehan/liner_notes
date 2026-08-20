@@ -1,4 +1,5 @@
 import { supabase } from "@/shared/api/supabase";
+import { normalizeYouTubeVideoId } from "../lib/normalize-youtube-video-id";
 import type { Album, GenreId, Track } from "../model/types";
 
 interface DbArtist {
@@ -81,7 +82,10 @@ export function mapFeaturedAlbums(
 
     const sourceTracks = tracksByAlbum.get(albumRow.id) ?? [];
 
-    const tracks = sourceTracks.map<Track>((track) => ({
+    const tracks = sourceTracks.map<Track>((track) => {
+      const youtubeVideoId = normalizeYouTubeVideoId(track.youtube_video_id);
+
+      return {
         id: track.id,
         title: track.title,
         artist,
@@ -92,14 +96,15 @@ export function mapFeaturedAlbums(
         genre,
         tags: [],
         definition: track.description || albumRow.description,
-        ...(track.youtube_video_id ? { youtubeVideoId: track.youtube_video_id } : {}),
+        ...(youtubeVideoId ? { youtubeVideoId } : {}),
         ...(track.youtube_start_seconds !== null
           ? { youtubeStartSeconds: track.youtube_start_seconds }
           : {}),
         ...(track.youtube_end_seconds !== null
           ? { youtubeEndSeconds: track.youtube_end_seconds }
           : {}),
-      }));
+      };
+    });
 
     const cover: Track = tracks[0] ?? {
       id: `${albumRow.id}:cover`,

@@ -10,12 +10,40 @@ vi.mock("@/entities/track/api/featured-albums", () => ({
   fetchFeaturedAlbums: featuredAlbumsMock,
 }));
 
+vi.mock("react-youtube", () => ({
+  default: ({ videoId, title, opts, onError }: {
+    videoId?: string;
+    title?: string;
+    opts?: { playerVars?: Record<string, number> };
+    onError?: (event: { data: number }) => void;
+  }) => (
+    <>
+      <iframe
+        title={title}
+        data-video-id={videoId}
+        data-start={opts?.playerVars?.start}
+        data-end={opts?.playerVars?.end}
+      />
+      <button type="button" aria-label="YouTube 오류 시뮬레이션" onClick={() => onError?.({ data: 150 })} />
+    </>
+  ),
+}));
+
 const SESSION_SEED = Math.floor(0.5 * 2_147_483_647);
 const HOME_ALBUMS = generateTileAlbums(0, 0, SESSION_SEED);
-const DATABASE_ALBUMS = HOME_ALBUMS.map((album, index) => ({
-  ...album,
-  id: `database-${index}`,
-}));
+const DATABASE_ALBUMS = HOME_ALBUMS.map((album, index) => {
+  const tracks = album.tracks.map((track, trackIndex) =>
+    index === 0 && trackIndex === 0
+      ? {
+          ...track,
+          youtubeVideoId: "M7lc1UVf-VE",
+          youtubeStartSeconds: 12,
+          youtubeEndSeconds: 180,
+        }
+      : track,
+  );
+  return { ...album, id: `database-${index}`, tracks, cover: tracks[0] };
+});
 
 function firstCard(title: string, artist: string) {
   return screen.getAllByLabelText(`${title} — ${artist}`)[0];
@@ -86,6 +114,41 @@ describe("MainPage", () => {
     fireEvent.keyDown(window, { key: "Escape" });
     await waitFor(() =>
       expect(screen.queryByRole("dialog")).not.toBeInTheDocument(),
+    );
+  });
+
+  it("YouTube 정보가 있는 수록곡을 모달에서 재생한다", async () => {
+    await renderLoadedPage();
+    const album = DATABASE_ALBUMS[0];
+    fireEvent.click(firstCard(album.title, album.artist));
+
+    const dialog = await screen.findByRole("dialog");
+    fireEvent.click(within(dialog).getByRole("button", { name: "앨범 듣기" }));
+
+    const player = await within(dialog).findByTitle(
+      `${album.tracks[0].title} YouTube 재생`,
+    );
+    expect(player).toHaveAttribute("data-video-id", "M7lc1UVf-VE");
+    expect(player).toHaveAttribute("data-start", "12");
+    expect(player).toHaveAttribute("data-end", "180");
+
+    fireEvent.click(within(dialog).getByRole("button", { name: "재생 닫기" }));
+    expect(
+      within(dialog).queryByTitle(`${album.tracks[0].title} YouTube 재생`),
+    ).not.toBeInTheDocument();
+  });
+
+  it("YouTube 임베드가 차단되면 원인을 안내한다", async () => {
+    await renderLoadedPage();
+    const album = DATABASE_ALBUMS[0];
+    fireEvent.click(firstCard(album.title, album.artist));
+
+    const dialog = await screen.findByRole("dialog");
+    fireEvent.click(within(dialog).getByRole("button", { name: "앨범 듣기" }));
+    fireEvent.click(within(dialog).getByRole("button", { name: "YouTube 오류 시뮬레이션" }));
+
+    expect(within(dialog).getByRole("alert")).toHaveTextContent(
+      "게시자가 외부 사이트 재생을 허용하지 않은 영상입니다.",
     );
   });
 

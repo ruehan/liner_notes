@@ -27,6 +27,11 @@ its tracks are entered; its detail view will show an empty tracklist until
 those rows are added. If credentials, database tables, or permissions are
 unavailable, the wall has no album cards rather than showing placeholder data.
 
-`tracks.youtube_video_id`, `youtube_start_seconds`, and
-`youtube_end_seconds` are reserved for the forthcoming YouTube player. Store a
-YouTube video ID, not a full URL. Do not add a service-role key to `.env.local`.
+Set `tracks.youtube_video_id` to a YouTube video ID or a standard YouTube URL
+(`watch`, `youtu.be`, `shorts`, `embed`, or `live`) to enable playback in the
+album detail sheet. URLs are converted to video IDs before reaching the player.
+`youtube_start_seconds` and
+`youtube_end_seconds` are optional clip boundaries in seconds. The
+`react-youtube` player only loads after a visitor chooses an album or track to
+play, and explains unavailable or embed-blocked videos in the UI. Do not add a
+service-role key to `.env.local`.

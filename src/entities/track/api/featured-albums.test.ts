@@ -1,5 +1,6 @@
 import { describe, expect, it } from "vitest";
 import { mapFeaturedAlbums, resolveCoverUrl } from "./featured-albums";
+import { normalizeYouTubeVideoId } from "../lib/normalize-youtube-video-id";
 
 const albums = Array.from({ length: 12 }, (_, index) => ({
   id: `album-${index}`,
@@ -18,7 +19,7 @@ const tracks = albums.flatMap((album) => [
     title: "First track",
     duration_seconds: 185,
     description: "A distinct track note",
-    youtube_video_id: "dQw4w9WgXcQ",
+    youtube_video_id: "https://www.youtube.com/watch?v=dQw4w9WgXcQ",
     youtube_start_seconds: 12,
     youtube_end_seconds: 180,
   },
@@ -76,5 +77,18 @@ describe("resolveCoverUrl", () => {
     expect(
       resolveCoverUrl("covers/album-1.webp", (path) => `https://storage.example/${path}`),
     ).toBe("https://storage.example/covers/album-1.webp");
+  });
+});
+
+describe("normalizeYouTubeVideoId", () => {
+  it.each([
+    ["dQw4w9WgXcQ", "dQw4w9WgXcQ"],
+    ["https://www.youtube.com/watch?v=dQw4w9WgXcQ", "dQw4w9WgXcQ"],
+    ["https://youtu.be/dQw4w9WgXcQ?si=share", "dQw4w9WgXcQ"],
+    ["youtube.com/shorts/dQw4w9WgXcQ", "dQw4w9WgXcQ"],
+    ["https://example.com/watch?v=dQw4w9WgXcQ", undefined],
+    ["not-a-video-id", undefined],
+  ])("YouTube 영상 주소를 재생 가능한 ID로 정규화한다", (reference, expected) => {
+    expect(normalizeYouTubeVideoId(reference)).toBe(expected);
   });
 });
