@@ -65,6 +65,7 @@ export function MainPage() {
   const [hotKey, setHotKey] = useState<string | null>(null);
   const [hintGone, setHintGone] = useState(false);
   const [catalogOpen, setCatalogOpen] = useState(false);
+  const [catalogArtist, setCatalogArtist] = useState<string | null>(null);
   const [aboutOpen, setAboutOpen] = useState(false);
   const [submissionOpen, setSubmissionOpen] = useState(false);
   const [favorites, setFavorites] = useState<string[]>(() => loadFavorites());
@@ -209,6 +210,18 @@ export function MainPage() {
     setNavList(null);
   }, []);
 
+  const openCatalog = useCallback(() => {
+    setCatalogArtist(null);
+    setCatalogOpen(true);
+  }, []);
+
+  const openArtistCatalog = useCallback((artist: string) => {
+    setOpenEntry(null);
+    setNavList(null);
+    setCatalogArtist(artist);
+    setCatalogOpen(true);
+  }, []);
+
   const startPlayback = useCallback((album: Album, track: Track) => {
     setPlayback({ album, track });
     setPlaybackPosition(0);
@@ -292,12 +305,12 @@ export function MainPage() {
         shuffle();
       }
       if ((e.key === "i" || e.key === "I") && !openEntry && !catalogOpen && !aboutOpen && !submissionOpen) {
-        setCatalogOpen(true);
+        openCatalog();
       }
     };
     window.addEventListener("keydown", onKeyDown);
     return () => window.removeEventListener("keydown", onKeyDown);
-  }, [shuffle, openEntry, catalogOpen, aboutOpen, submissionOpen, closeDetail]);
+  }, [shuffle, openEntry, catalogOpen, aboutOpen, submissionOpen, closeDetail, openCatalog]);
 
   const renderTile = useCallback(
     (k: number, m: number) => {
@@ -335,12 +348,13 @@ export function MainPage() {
             }}
             onEnter={() => setHoverEntry({ album, catalog })}
             onLeave={() => setHoverEntry(null)}
+            onOpenArtist={openArtistCatalog}
             onToggleFavorite={() => handleToggleFavorite(fvKey)}
           />
         );
       });
     },
-    [albumsAt, favoriteKeyFor, hotKey, favorites, handleToggleFavorite],
+    [albumsAt, favoriteKeyFor, hotKey, favorites, handleToggleFavorite, openArtistCatalog],
   );
 
   return (
@@ -354,7 +368,7 @@ export function MainPage() {
 
       <Hud
         catalogCount={catalogEntries.length}
-        onCatalog={() => setCatalogOpen(true)}
+        onCatalog={openCatalog}
         onAbout={() => setAboutOpen(true)}
         onSubmit={() => setSubmissionOpen(true)}
       />
@@ -373,8 +387,11 @@ export function MainPage() {
       <Catalog
         open={catalogOpen}
         entries={catalogEntries}
+        selectedArtist={catalogArtist}
         onClose={() => setCatalogOpen(false)}
         onOpenEntry={openFromCatalog}
+        onSelectArtist={setCatalogArtist}
+        onClearArtist={() => setCatalogArtist(null)}
       />
       <About open={aboutOpen} onClose={() => setAboutOpen(false)} />
       <SubmissionSheet
@@ -390,6 +407,7 @@ export function MainPage() {
         onToggleFavorite={
           openEntry ? () => handleToggleFavorite(openEntry.favoriteKey) : undefined
         }
+        onOpenArtist={openArtistCatalog}
         onPrev={() => stepNav(-1)}
         onNext={() => stepNav(1)}
         playingTrackId={

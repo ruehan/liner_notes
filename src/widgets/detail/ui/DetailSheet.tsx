@@ -20,6 +20,7 @@ interface Props {
   navPos?: { index: number; total: number } | null;
   onClose: () => void;
   onToggleFavorite?: () => void;
+  onOpenArtist?: (artist: string) => void;
   onPrev?: () => void;
   onNext?: () => void;
   playingTrackId?: string | null;
@@ -32,6 +33,7 @@ export function DetailSheet({
   navPos = null,
   onClose,
   onToggleFavorite,
+  onOpenArtist,
   onPrev,
   onNext,
   playingTrackId = null,
@@ -101,7 +103,16 @@ export function DetailSheet({
         >
           <div className="detail__body">
             <h1 className="detail__title">{album.title}</h1>
-            <p className="detail__artist">{album.artist}</p>
+            <button
+              type="button"
+              className="detail__artist"
+              onClick={() => onOpenArtist?.(album.artist)}
+              disabled={!onOpenArtist}
+              aria-label={`${album.artist}의 앨범 보기`}
+            >
+              {album.artist}
+              {onOpenArtist && <span aria-hidden="true"> · 모든 앨범 보기</span>}
+            </button>
             <p className="detail__phon">{theme.phon}</p>
             <p className="detail__def">
               <b>n.</b>

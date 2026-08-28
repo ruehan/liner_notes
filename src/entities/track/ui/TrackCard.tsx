@@ -11,6 +11,7 @@ interface Props {
   onOpen: () => void;
   onEnter: () => void;
   onLeave: () => void;
+  onOpenArtist: (artist: string) => void;
   onToggleFavorite: () => void;
 }
 
@@ -23,6 +24,7 @@ export function AlbumCard({
   onOpen,
   onEnter,
   onLeave,
+  onOpenArtist,
   onToggleFavorite,
 }: Props) {
   return (
@@ -31,16 +33,9 @@ export function AlbumCard({
         .filter(Boolean)
         .join(" ")}
       style={style}
-      role="button"
-      tabIndex={0}
+      role="group"
       aria-label={`${album.title} — ${album.artist}`}
       onClick={onOpen}
-      onKeyDown={(e) => {
-        if (e.key === "Enter" || e.key === " ") {
-          e.preventDefault();
-          onOpen();
-        }
-      }}
       onMouseEnter={onEnter}
       onMouseMove={(event) => {
         const card = event.currentTarget;
@@ -61,6 +56,15 @@ export function AlbumCard({
         onLeave();
       }}
     >
+      <button
+        type="button"
+        className="track-card__open"
+        onClick={(event) => {
+          event.stopPropagation();
+          onOpen();
+        }}
+        aria-label={`${album.title} 앨범 상세 열기`}
+      />
       <div className="track-card__artwrap">
         <CoverArt track={album.cover} imageUrl={album.coverUrl} className="track-card__art" />
         <button
@@ -80,7 +84,17 @@ export function AlbumCard({
       <header className="track-card__head">
         <h3 className="track-card__title">{album.title}</h3>
         <p className="track-card__byline">
-          {album.artist}
+          <button
+            type="button"
+            className="track-card__artist"
+            onClick={(event) => {
+              event.stopPropagation();
+              onOpenArtist(album.artist);
+            }}
+            aria-label={`${album.artist}의 앨범 보기`}
+          >
+            {album.artist}
+          </button>
           <span className="track-card__year">{album.year}</span>
         </p>
       </header>

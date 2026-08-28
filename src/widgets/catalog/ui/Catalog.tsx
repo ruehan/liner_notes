@@ -15,26 +15,44 @@ export interface CatalogEntry {
 interface Props {
   open: boolean;
   entries: CatalogEntry[];
+  selectedArtist: string | null;
   onClose: () => void;
   onOpenEntry: (entry: CatalogEntry, list: CatalogEntry[]) => void;
+  onSelectArtist: (artist: string) => void;
+  onClearArtist: () => void;
 }
 
-export function Catalog({ open, entries, onClose, onOpenEntry }: Props) {
+export function Catalog({
+  open,
+  entries,
+  selectedArtist,
+  onClose,
+  onOpenEntry,
+  onSelectArtist,
+  onClearArtist,
+}: Props) {
   const [query, setQuery] = useState("");
+  const scopedEntries = useMemo(
+    () =>
+      selectedArtist
+        ? entries.filter((entry) => entry.album.artist === selectedArtist)
+        : entries,
+    [entries, selectedArtist],
+  );
   const filtered = useMemo(
     () =>
-      filterByQuery(entries, query, (e) => [
+      filterByQuery(scopedEntries, query, (e) => [
         e.album.title,
         e.album.artist,
         ...e.album.tracks.map((track) => track.title),
         e.catalog,
       ]),
-    [entries, query],
+    [scopedEntries, query],
   );
 
   useEffect(() => {
     if (open) setQuery("");
-  }, [open]);
+  }, [open, selectedArtist]);
 
   if (!open) return null;
 
@@ -48,6 +66,14 @@ export function Catalog({ open, entries, onClose, onOpenEntry }: Props) {
         <span className="catalog__count">
           {String(filtered.length).padStart(2, "0")} records
         </span>
+        {selectedArtist && (
+          <span className="catalog__artist-filter">
+            {selectedArtist}
+            <button type="button" onClick={onClearArtist} aria-label="아티스트 필터 해제">
+              ×
+            </button>
+          </span>
+        )}
         <input
           className="catalog__search"
           type="search"
@@ -88,17 +114,27 @@ export function Catalog({ open, entries, onClose, onOpenEntry }: Props) {
             <span className="catalog__slide-no" aria-hidden="true">
               {String(idx + 1).padStart(2, "0")}
             </span>
-            <button
-              type="button"
-              className="catalog__slide-main"
-              onClick={() => onOpenEntry(e, filtered)}
-            >
-              <span className="catalog__slide-cat">{e.catalog}</span>
-              <span className="catalog__slide-title">{e.album.title}</span>
+            <div className="catalog__slide-main">
+              <button
+                type="button"
+                className="catalog__slide-open"
+                onClick={() => onOpenEntry(e, filtered)}
+              >
+                <span className="catalog__slide-cat">{e.catalog}</span>
+                <span className="catalog__slide-title">{e.album.title}</span>
+              </button>
+              <button
+                type="button"
+                className="catalog__slide-artist"
+                onClick={() => onSelectArtist(e.album.artist)}
+                aria-label={`${e.album.artist}의 앨범 보기`}
+              >
+                {e.album.artist}
+              </button>
               <span className="catalog__slide-meta">
-                {e.album.artist} · {e.album.tracks.length} tracks · {e.album.year}
+                {e.album.tracks.length} tracks · {e.album.year}
               </span>
-            </button>
+            </div>
             <span className="catalog__slide-art" aria-hidden="true">
               <CoverArt track={e.album.cover} imageUrl={e.album.coverUrl} />
             </span>

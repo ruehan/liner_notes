@@ -44,6 +44,10 @@ const DATABASE_ALBUMS = HOME_ALBUMS.map((album, index) => {
   );
   return { ...album, id: `database-${index}`, tracks, cover: tracks[0] };
 });
+const ARTIST_ALBUMS = DATABASE_ALBUMS.slice(0, 3).map((album, index) => ({
+  ...album,
+  artist: index < 2 ? "Shared Artist" : "Other Artist",
+}));
 
 function firstCard(title: string, artist: string) {
   return screen.getAllByLabelText(`${title} — ${artist}`)[0];
@@ -232,6 +236,45 @@ describe("MainPage", () => {
 
     const dialog = await screen.findByRole("dialog");
     expect(dialog).toHaveTextContent(album.artist);
+  });
+
+  it("카드의 아티스트를 누르면 같은 아티스트 앨범만 인덱스로 연다", async () => {
+    featuredAlbumsMock.mockResolvedValue(ARTIST_ALBUMS);
+    render(<MainPage />);
+    await screen.findByLabelText(`${ARTIST_ALBUMS[0].title} — Shared Artist`);
+
+    const card = screen.getByLabelText(`${ARTIST_ALBUMS[0].title} — Shared Artist`);
+    fireEvent.click(
+      within(card).getByRole("button", { name: "Shared Artist의 앨범 보기" }),
+    );
+
+    const catalog = await screen.findByRole("dialog", { name: "카탈로그 인덱스" });
+    expect(catalog).toHaveTextContent("02 records");
+    expect(catalog).toHaveTextContent(ARTIST_ALBUMS[0].title);
+    expect(catalog).toHaveTextContent(ARTIST_ALBUMS[1].title);
+    expect(catalog).not.toHaveTextContent(ARTIST_ALBUMS[2].title);
+
+    fireEvent.click(screen.getByRole("button", { name: "아티스트 필터 해제" }));
+    expect(catalog).toHaveTextContent("03 records");
+    expect(catalog).toHaveTextContent(ARTIST_ALBUMS[2].title);
+  });
+
+  it("앨범 상세의 아티스트를 누르면 같은 아티스트의 인덱스로 이동한다", async () => {
+    featuredAlbumsMock.mockResolvedValue(ARTIST_ALBUMS);
+    render(<MainPage />);
+    await screen.findByLabelText(`${ARTIST_ALBUMS[0].title} — Shared Artist`);
+    fireEvent.click(screen.getByLabelText(`${ARTIST_ALBUMS[0].title} — Shared Artist`));
+
+    const detail = await screen.findByRole("dialog", {
+      name: `${ARTIST_ALBUMS[0].title} 앨범 상세`,
+    });
+    fireEvent.click(
+      within(detail).getByRole("button", { name: "Shared Artist의 앨범 보기" }),
+    );
+
+    const catalog = await screen.findByRole("dialog", { name: "카탈로그 인덱스" });
+    expect(catalog).toHaveTextContent("02 records");
+    expect(catalog).not.toHaveTextContent(ARTIST_ALBUMS[2].title);
   });
 
   it("순서대로 듣기로 열어 next 버튼으로 이동한다", async () => {
