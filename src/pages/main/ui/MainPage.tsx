@@ -20,6 +20,7 @@ import { Boot } from "@/widgets/boot";
 import { Catalog, type CatalogEntry } from "@/widgets/catalog";
 import { About } from "@/widgets/about";
 import { ShuffleButton, pickShuffleIndex } from "@/features/shuffle";
+import { PlayerDock, stepTrack, type PlaybackItem } from "@/features/playback";
 import { SubmissionSheet } from "@/features/catalog-submission";
 import {
   databaseFavKey,
@@ -57,6 +58,7 @@ export function MainPage() {
   const [aboutOpen, setAboutOpen] = useState(false);
   const [submissionOpen, setSubmissionOpen] = useState(false);
   const [favorites, setFavorites] = useState<string[]>(() => loadFavorites());
+  const [playback, setPlayback] = useState<PlaybackItem | null>(null);
 
   const wallRef = useRef<WallHandle>(null);
   const hotTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
@@ -154,6 +156,25 @@ export function MainPage() {
     setOpenEntry(null);
     setNavList(null);
   }, []);
+
+  const playPreviousTrack = useCallback(() => {
+    setPlayback((current) => {
+      if (!current) return null;
+      const track = stepTrack(current, -1);
+      return track ? { ...current, track } : current;
+    });
+  }, []);
+
+  const playNextTrack = useCallback(() => {
+    setPlayback((current) => {
+      if (!current) return null;
+      const track = stepTrack(current, 1);
+      return track ? { ...current, track } : current;
+    });
+  }, []);
+
+  const canPlayPrevious = playback ? Boolean(stepTrack(playback, -1)) : false;
+  const canPlayNext = playback ? Boolean(stepTrack(playback, 1)) : false;
 
   const shuffle = useCallback(() => {
     if (openEntry) return;
@@ -303,6 +324,24 @@ export function MainPage() {
         }
         onPrev={() => stepNav(-1)}
         onNext={() => stepNav(1)}
+        playingTrackId={
+          playback && openEntry && playback.album.id === openEntry.album.id
+            ? playback.track.id
+            : null
+        }
+        onPlayTrack={
+          openEntry
+            ? (track) => setPlayback({ album: openEntry.album, track })
+            : undefined
+        }
+      />
+      <PlayerDock
+        item={playback}
+        canPrev={canPlayPrevious}
+        canNext={canPlayNext}
+        onClose={() => setPlayback(null)}
+        onPrev={playPreviousTrack}
+        onNext={playNextTrack}
       />
       <Boot onDone={bootDone} />
     </div>

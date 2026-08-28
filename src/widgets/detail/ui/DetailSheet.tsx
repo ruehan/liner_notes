@@ -1,5 +1,4 @@
 import { useEffect, useRef, useState } from "react";
-import YouTube, { type YouTubeProps } from "react-youtube";
 import {
   GENRES,
   CoverArt,
@@ -23,33 +22,8 @@ interface Props {
   onToggleFavorite?: () => void;
   onPrev?: () => void;
   onNext?: () => void;
-}
-
-function youtubeOptions(track: Track): YouTubeProps["opts"] {
-  return {
-    width: "100%",
-    height: "100%",
-    playerVars: {
-      autoplay: 1,
-      controls: 1,
-      playsinline: 1,
-      rel: 0,
-      ...(track.youtubeStartSeconds !== undefined
-        ? { start: track.youtubeStartSeconds }
-        : {}),
-      ...(track.youtubeEndSeconds !== undefined
-        ? { end: track.youtubeEndSeconds }
-        : {}),
-    },
-  };
-}
-
-function youtubeErrorMessage(code: number): string {
-  if (code === 2) return "YouTube 영상 ID 형식이 올바르지 않습니다.";
-  if (code === 5) return "현재 브라우저에서 이 영상을 재생할 수 없습니다.";
-  if (code === 100) return "삭제되었거나 비공개 처리된 영상입니다.";
-  if (code === 101 || code === 150) return "게시자가 외부 사이트 재생을 허용하지 않은 영상입니다.";
-  return "YouTube 재생기를 불러오지 못했습니다. 잠시 후 다시 시도해 주세요.";
+  playingTrackId?: string | null;
+  onPlayTrack?: (track: Track) => void;
 }
 
 export function DetailSheet({
@@ -60,20 +34,16 @@ export function DetailSheet({
   onToggleFavorite,
   onPrev,
   onNext,
+  playingTrackId = null,
+  onPlayTrack,
 }: Props) {
   const [shown, setShown] = useState<OpenEntry | null>(null);
   const [open, setOpen] = useState(false);
-  const [playingTrack, setPlayingTrack] = useState<Track | null>(null);
-  const [playerError, setPlayerError] = useState<string | null>(null);
-  const [playerReady, setPlayerReady] = useState(false);
   const closing = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   useEffect(() => {
     if (entry) {
       if (closing.current) clearTimeout(closing.current);
-      setPlayingTrack(null);
-      setPlayerError(null);
-      setPlayerReady(false);
       setShown(entry);
       const raf = requestAnimationFrame(() =>
         requestAnimationFrame(() => setOpen(true)),
@@ -96,15 +66,10 @@ export function DetailSheet({
   const firstPlayableTrack = album.tracks.find((track) =>
     normalizeYouTubeVideoId(track.youtubeVideoId),
   );
-  const playingVideoId = playingTrack
-    ? normalizeYouTubeVideoId(playingTrack.youtubeVideoId)
-    : undefined;
 
   const startPlayback = (track: Track) => {
     if (!normalizeYouTubeVideoId(track.youtubeVideoId)) return;
-    setPlayerError(null);
-    setPlayerReady(false);
-    setPlayingTrack(track);
+    onPlayTrack?.(track);
   };
 
   return (
@@ -185,7 +150,7 @@ export function DetailSheet({
                   return (
                     <li
                       key={track.id}
-                      className={track.id === playingTrack?.id ? "is-playing" : undefined}
+                      className={track.id === playingTrackId ? "is-playing" : undefined}
                     >
                       <button
                         type="button"
@@ -259,46 +224,12 @@ export function DetailSheet({
           </div>
 
           <div className="detail__art">
-            {playingTrack && playingVideoId ? (
-              <section className="detail__player" aria-label="YouTube 재생기">
-                <YouTube
-                  key={playingTrack.id}
-                  title={`${playingTrack.title} YouTube 재생`}
-                  videoId={playingVideoId}
-                  className="detail__youtube"
-                  iframeClassName="detail__youtube-frame"
-                  opts={youtubeOptions(playingTrack)}
-                  onReady={() => setPlayerReady(true)}
-                  onError={(event) => {
-                    setPlayerReady(false);
-                    setPlayerError(youtubeErrorMessage(event.data));
-                  }}
-                />
-                {!playerReady && !playerError && (
-                  <p className="detail__player-loading">YouTube 재생기 불러오는 중…</p>
-                )}
-                {playerError && <p className="detail__player-error" role="alert">{playerError}</p>}
-                <div className="detail__player-meta">
-                  <span>now playing · {playingTrack.title}</span>
-                  <button type="button" onClick={() => {
-                    setPlayerReady(false);
-                    setPlayerError(null);
-                    setPlayingTrack(null);
-                  }}>
-                    재생 닫기
-                  </button>
-                </div>
-              </section>
-            ) : (
-              <>
-                <div className="detail__frame detail__frame--back" aria-hidden="true">
-                  <CoverArt track={album.cover} imageUrl={album.coverUrl} />
-                </div>
-                <div className="detail__frame">
-                  <CoverArt track={album.cover} imageUrl={album.coverUrl} />
-                </div>
-              </>
-            )}
+            <div className="detail__frame detail__frame--back" aria-hidden="true">
+              <CoverArt track={album.cover} imageUrl={album.coverUrl} />
+            </div>
+            <div className="detail__frame">
+              <CoverArt track={album.cover} imageUrl={album.coverUrl} />
+            </div>
           </div>
         </section>
       </div>

@@ -121,7 +121,7 @@ describe("MainPage", () => {
     );
   });
 
-  it("YouTube 정보가 있는 수록곡을 모달에서 재생한다", async () => {
+  it("모달을 닫아도 YouTube 재생은 미니 플레이어에서 계속된다", async () => {
     await renderLoadedPage();
     const album = DATABASE_ALBUMS[0];
     fireEvent.click(firstCard(album.title, album.artist));
@@ -129,16 +129,26 @@ describe("MainPage", () => {
     const dialog = await screen.findByRole("dialog");
     fireEvent.click(within(dialog).getByRole("button", { name: "앨범 듣기" }));
 
-    const player = await within(dialog).findByTitle(
+    const player = await screen.findByTitle(
       `${album.tracks[0].title} YouTube 재생`,
     );
     expect(player).toHaveAttribute("data-video-id", "M7lc1UVf-VE");
     expect(player).toHaveAttribute("data-start", "12");
     expect(player).toHaveAttribute("data-end", "180");
 
-    fireEvent.click(within(dialog).getByRole("button", { name: "재생 닫기" }));
+    expect(screen.getByLabelText("미니 플레이어")).toHaveTextContent(album.tracks[0].title);
+
+    fireEvent.keyDown(window, { key: "Escape" });
+    await waitFor(() =>
+      expect(screen.queryByRole("dialog")).not.toBeInTheDocument(),
+    );
     expect(
-      within(dialog).queryByTitle(`${album.tracks[0].title} YouTube 재생`),
+      screen.getByTitle(`${album.tracks[0].title} YouTube 재생`),
+    ).toBeInTheDocument();
+
+    fireEvent.click(screen.getByRole("button", { name: "재생 종료" }));
+    expect(
+      screen.queryByTitle(`${album.tracks[0].title} YouTube 재생`),
     ).not.toBeInTheDocument();
   });
 
@@ -149,9 +159,13 @@ describe("MainPage", () => {
 
     const dialog = await screen.findByRole("dialog");
     fireEvent.click(within(dialog).getByRole("button", { name: "앨범 듣기" }));
-    fireEvent.click(within(dialog).getByRole("button", { name: "YouTube 오류 시뮬레이션" }));
+    const errorButton = document.querySelector(
+      '[aria-label="YouTube 오류 시뮬레이션"]',
+    );
+    expect(errorButton).toBeInstanceOf(HTMLButtonElement);
+    fireEvent.click(errorButton!);
 
-    expect(within(dialog).getByRole("alert")).toHaveTextContent(
+    expect(screen.getByRole("alert")).toHaveTextContent(
       "게시자가 외부 사이트 재생을 허용하지 않은 영상입니다.",
     );
   });
