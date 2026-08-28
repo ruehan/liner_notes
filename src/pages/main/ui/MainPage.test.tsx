@@ -152,6 +152,32 @@ describe("MainPage", () => {
     ).not.toBeInTheDocument();
   });
 
+  it("재생 대상과 볼륨을 새로고침 뒤에 복원한다", async () => {
+    const firstPage = render(<MainPage />);
+    const album = DATABASE_ALBUMS[0];
+    await screen.findByLabelText(`${album.title} — ${album.artist}`);
+    fireEvent.click(firstCard(album.title, album.artist));
+
+    const dialog = await screen.findByRole("dialog");
+    fireEvent.click(within(dialog).getByRole("button", { name: "앨범 듣기" }));
+    await screen.findByTitle(`${album.tracks[0].title} YouTube 재생`);
+    fireEvent.change(screen.getByRole("slider", { name: "볼륨" }), {
+      target: { value: "38" },
+    });
+
+    await waitFor(() =>
+      expect(window.localStorage.getItem("liner-notes:playback-session")).toContain('"volume":38'),
+    );
+    firstPage.unmount();
+
+    render(<MainPage />);
+    await screen.findByLabelText(`${album.title} — ${album.artist}`);
+    expect(
+      await screen.findByTitle(`${album.tracks[0].title} YouTube 재생`),
+    ).toHaveAttribute("data-video-id", "M7lc1UVf-VE");
+    expect(screen.getByRole("slider", { name: "볼륨" })).toHaveValue("38");
+  });
+
   it("YouTube 임베드가 차단되면 원인을 안내한다", async () => {
     await renderLoadedPage();
     const album = DATABASE_ALBUMS[0];

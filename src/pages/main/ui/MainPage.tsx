@@ -5,6 +5,7 @@ import {
   isHomeTile,
   tileCatalog,
   type Album,
+  type Track,
 } from "@/entities/track";
 import {
   WORLD,
@@ -20,7 +21,16 @@ import { Boot } from "@/widgets/boot";
 import { Catalog, type CatalogEntry } from "@/widgets/catalog";
 import { About } from "@/widgets/about";
 import { ShuffleButton, pickShuffleIndex } from "@/features/shuffle";
-import { PlayerDock, stepTrack, type PlaybackItem } from "@/features/playback";
+import {
+  DEFAULT_PLAYBACK_VOLUME,
+  PlayerDock,
+  clearPlaybackSession,
+  loadPlaybackSession,
+  restorePlaybackItem,
+  savePlaybackSession,
+  stepTrack,
+  type PlaybackItem,
+} from "@/features/playback";
 import { SubmissionSheet } from "@/features/catalog-submission";
 import {
   databaseFavKey,
@@ -59,9 +69,21 @@ export function MainPage() {
   const [submissionOpen, setSubmissionOpen] = useState(false);
   const [favorites, setFavorites] = useState<string[]>(() => loadFavorites());
   const [playback, setPlayback] = useState<PlaybackItem | null>(null);
+  const [initialPlaybackSession] = useState(() => loadPlaybackSession());
+  const [playbackRestored, setPlaybackRestored] = useState(
+    () => initialPlaybackSession === null,
+  );
+  const [playbackVolume, setPlaybackVolume] = useState(
+    () => initialPlaybackSession?.volume ?? DEFAULT_PLAYBACK_VOLUME,
+  );
+  const [playbackPosition, setPlaybackPosition] = useState(
+    () => initialPlaybackSession?.positionSeconds ?? 0,
+  );
 
   const wallRef = useRef<WallHandle>(null);
   const hotTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const activePlaybackTrackId = useRef<string | null>(null);
+  activePlaybackTrackId.current = playback?.track.id ?? null;
 
   const requestFeaturedAlbums = useCallback(() => fetchFeaturedAlbums(), []);
 
@@ -79,6 +101,36 @@ export function MainPage() {
       active = false;
     };
   }, [requestFeaturedAlbums]);
+
+  useEffect(() => {
+    if (playbackRestored || featuredAlbums === null) return;
+
+    const restored = initialPlaybackSession
+      ? restorePlaybackItem(featuredAlbums, initialPlaybackSession)
+      : null;
+    if (restored) {
+      setPlayback(restored);
+      setPlaybackPosition(initialPlaybackSession!.positionSeconds);
+    } else {
+      clearPlaybackSession();
+    }
+    setPlaybackRestored(true);
+  }, [featuredAlbums, initialPlaybackSession, playbackRestored]);
+
+  useEffect(() => {
+    if (!playbackRestored) return;
+    if (!playback) {
+      clearPlaybackSession();
+      return;
+    }
+
+    savePlaybackSession({
+      albumId: playback.album.id,
+      trackId: playback.track.id,
+      positionSeconds: playbackPosition,
+      volume: playbackVolume,
+    });
+  }, [playback, playbackPosition, playbackRestored, playbackVolume]);
 
   useEffect(() => {
     const t = setTimeout(() => setHintGone(true), 6000);
@@ -157,7 +209,22 @@ export function MainPage() {
     setNavList(null);
   }, []);
 
+  const startPlayback = useCallback((album: Album, track: Track) => {
+    setPlayback({ album, track });
+    setPlaybackPosition(0);
+  }, []);
+
+  const stopPlayback = useCallback(() => {
+    setPlayback(null);
+    setPlaybackPosition(0);
+  }, []);
+
+  const recordPlaybackProgress = useCallback((trackId: string, seconds: number) => {
+    if (activePlaybackTrackId.current === trackId) setPlaybackPosition(seconds);
+  }, []);
+
   const playPreviousTrack = useCallback(() => {
+    setPlaybackPosition(0);
     setPlayback((current) => {
       if (!current) return null;
       const track = stepTrack(current, -1);
@@ -166,6 +233,7 @@ export function MainPage() {
   }, []);
 
   const playNextTrack = useCallback(() => {
+    setPlaybackPosition(0);
     setPlayback((current) => {
       if (!current) return null;
       const track = stepTrack(current, 1);
@@ -331,7 +399,7 @@ export function MainPage() {
         }
         onPlayTrack={
           openEntry
-            ? (track) => setPlayback({ album: openEntry.album, track })
+            ? (track) => startPlayback(openEntry.album, track)
             : undefined
         }
       />
@@ -339,9 +407,13 @@ export function MainPage() {
         item={playback}
         canPrev={canPlayPrevious}
         canNext={canPlayNext}
-        onClose={() => setPlayback(null)}
+        volume={playbackVolume}
+        resumeSeconds={playbackPosition}
+        onClose={stopPlayback}
         onPrev={playPreviousTrack}
         onNext={playNextTrack}
+        onVolumeChange={setPlaybackVolume}
+        onProgress={recordPlaybackProgress}
       />
       <Boot onDone={bootDone} />
     </div>
