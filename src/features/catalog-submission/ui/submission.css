@@ -163,7 +163,7 @@
   gap: 12px;
 }
 
-.submission__artist-list strong {
+.submission__artist-list > div > strong {
   font-family: var(--mono);
   font-size: var(--t-label);
   letter-spacing: var(--tr-wider);
@@ -171,21 +171,67 @@
 }
 
 .submission__artist-list ul {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 7px;
+  display: grid;
+  gap: 8px;
   margin: 14px 0 0;
   padding: 0;
   list-style: none;
 }
 
 .submission__artist-list li {
-  padding: 5px 8px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 9px 10px;
   border: 1px solid var(--line);
-  border-radius: 999px;
+  border-radius: 6px;
   color: var(--fg-dim);
   font-family: var(--mono);
+  font-size: var(--t-ui);
+}
+
+.submission__artist-summary {
+  display: flex;
+  align-items: baseline;
+  min-width: 0;
+  gap: 8px;
+}
+
+.submission__artist-summary strong {
+  overflow: hidden;
+  color: var(--fg);
+  font-weight: 700;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.submission__artist-summary span {
+  flex: none;
+  color: var(--fg-faint);
   font-size: var(--t-micro);
+}
+
+.submission__artist-actions {
+  display: flex;
+  flex: none;
+  gap: 10px;
+}
+
+.submission__artist-actions button {
+  padding: 2px 0;
+  color: var(--accent);
+  font: inherit;
+  font-size: var(--t-micro);
+  font-weight: 700;
+  text-decoration: underline;
+  text-underline-offset: 3px;
+}
+
+.submission__artist-actions button:disabled {
+  color: var(--fg-faint);
+  cursor: not-allowed;
+  text-decoration: none;
 }
 
 .submission__workspace {

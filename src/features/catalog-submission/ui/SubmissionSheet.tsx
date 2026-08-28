@@ -1,6 +1,7 @@
 import { useCallback, useEffect, useRef, useState, type FormEvent } from "react";
 import {
   coverPreviewUrl,
+  deleteCatalogArtist,
   fetchEditorAlbums,
   fetchEditorArtists,
   getSubmissionAccess,
@@ -8,6 +9,7 @@ import {
   signOutEditor,
   submitCatalogAlbum,
   submitCatalogArtist,
+  updateCatalogArtist,
   uploadAlbumCover,
   updateCatalogAlbum,
   validateCoverFile,
@@ -86,9 +88,11 @@ export function SubmissionSheet({ open, onClose, onSubmitted }: Props) {
   const [artistsError, setArtistsError] = useState<string | null>(null);
   const [editingAlbumId, setEditingAlbumId] = useState<string | null>(null);
   const [editorDesk, setEditorDesk] = useState<EditorDesk>("album");
+  const [editingArtist, setEditingArtist] = useState<EditorArtist | null>(null);
   const [artistName, setArtistName] = useState("");
   const [artistError, setArtistError] = useState<string | null>(null);
   const [savingArtist, setSavingArtist] = useState(false);
+  const [deletingArtistId, setDeletingArtistId] = useState<string | null>(null);
   const trackKey = useRef(1);
 
   const refreshAccess = useCallback(async () => {
@@ -137,8 +141,10 @@ export function SubmissionSheet({ open, onClose, onSubmitted }: Props) {
     setArtistsError(null);
     setEditingAlbumId(null);
     setEditorDesk("album");
+    setEditingArtist(null);
     setArtistName("");
     setArtistError(null);
+    setDeletingArtistId(null);
     setCoverUploadError(null);
     void refreshAccess();
   }, [open, refreshAccess]);
@@ -240,16 +246,72 @@ export function SubmissionSheet({ open, onClose, onSubmitted }: Props) {
     setSavingArtist(true);
     setArtistError(null);
     try {
-      const artist = await submitCatalogArtist(name);
-      await loadEditorArtists();
-      setDraft((current) => ({ ...current, artistName: artist.name }));
-      setArtistName("");
-      setEditorDesk("album");
-      setNotice(`“${artist.name}” 아티스트를 등록하고 앨범 입력에 선택했습니다.`);
+      if (editingArtist) {
+        const previousName = editingArtist.name;
+        await updateCatalogArtist(editingArtist.id, name);
+        await onSubmitted();
+        await Promise.all([loadEditorArtists(), loadEditorAlbums()]);
+        setDraft((current) => (
+          current.artistName === previousName ? { ...current, artistName: name } : current
+        ));
+        setEditingArtist(null);
+        setArtistName("");
+        setNotice(`아티스트 이름을 “${name}”(으)로 수정했습니다.`);
+      } else {
+        const artist = await submitCatalogArtist(name);
+        await loadEditorArtists();
+        setDraft((current) => ({ ...current, artistName: artist.name }));
+        setArtistName("");
+        setEditorDesk("album");
+        setNotice(`“${artist.name}” 아티스트를 등록하고 앨범 입력에 선택했습니다.`);
+      }
     } catch (error) {
       setArtistError(messageFrom(error));
     } finally {
       setSavingArtist(false);
+    }
+  };
+
+  const startArtistEdit = (artist: EditorArtist) => {
+    setEditingArtist(artist);
+    setArtistName(artist.name);
+    setArtistError(null);
+    setNotice(null);
+  };
+
+  const cancelArtistEdit = () => {
+    setEditingArtist(null);
+    setArtistName("");
+    setArtistError(null);
+  };
+
+  const deleteArtist = async (artist: EditorArtist) => {
+    if (artist.albumCount !== 0) {
+      setArtistError(
+        artist.albumCount === null
+          ? "앨범 수를 확인할 수 없어 삭제할 수 없습니다. 최신 마이그레이션을 적용해 주세요."
+          : "앨범이 연결된 아티스트는 삭제할 수 없습니다.",
+      );
+      return;
+    }
+    if (!window.confirm(`“${artist.name}” 아티스트를 삭제할까요? 이 작업은 되돌릴 수 없습니다.`)) {
+      return;
+    }
+
+    setDeletingArtistId(artist.id);
+    setArtistError(null);
+    try {
+      await deleteCatalogArtist(artist.id);
+      await loadEditorArtists();
+      if (editingArtist?.id === artist.id) cancelArtistEdit();
+      setDraft((current) => (
+        current.artistName === artist.name ? { ...current, artistName: "" } : current
+      ));
+      setNotice(`“${artist.name}” 아티스트를 삭제했습니다.`);
+    } catch (error) {
+      setArtistError(messageFrom(error));
+    } finally {
+      setDeletingArtistId(null);
     }
   };
 
@@ -327,7 +389,7 @@ export function SubmissionSheet({ open, onClose, onSubmitted }: Props) {
       className="submission"
       role="dialog"
       aria-modal="true"
-      aria-label={editorDesk === "artist" ? "아티스트 등록" : "앨범 등록"}
+      aria-label={editorDesk === "artist" ? "아티스트 관리" : "앨범 등록"}
     >
       <div className="submission__scrim" onClick={onClose} />
       <section className="submission__sheet">
@@ -350,11 +412,17 @@ export function SubmissionSheet({ open, onClose, onSubmitted }: Props) {
 
         <p className="submission__head">editor desk</p>
         <h1 className="submission__title">
-          {editorDesk === "artist" ? "아티스트 등록" : editingAlbumId ? "앨범 수정" : "앨범 등록"}
+          {editorDesk === "artist"
+            ? editingArtist
+              ? "아티스트 수정"
+              : "아티스트 등록"
+            : editingAlbumId
+              ? "앨범 수정"
+              : "앨범 등록"}
         </h1>
         <p className="submission__lead">
           {editorDesk === "artist"
-            ? "아티스트를 먼저 등록하면 앨범 입력에서 바로 선택할 수 있습니다."
+            ? "아티스트를 등록·수정하고, 앨범이 없는 기록은 안전하게 정리할 수 있습니다."
             : "등록된 아티스트를 선택해 새 기록을 남기거나 기존 앨범을 불러와 수정할 수 있습니다."}
         </p>
 
@@ -443,14 +511,14 @@ export function SubmissionSheet({ open, onClose, onSubmitted }: Props) {
                 className={editorDesk === "artist" ? "is-active" : undefined}
                 onClick={() => setEditorDesk("artist")}
               >
-                아티스트 등록
+                아티스트 관리
               </button>
             </div>
 
             {editorDesk === "artist" ? (
               <form className="submission__artist-form" onSubmit={handleArtistSubmit}>
                 <fieldset>
-                  <legend>아티스트 정보</legend>
+                  <legend>{editingArtist ? "아티스트 수정" : "아티스트 등록"}</legend>
                   <label>
                     아티스트 이름 <b>*</b>
                     <input
@@ -470,12 +538,12 @@ export function SubmissionSheet({ open, onClose, onSubmitted }: Props) {
                     <button
                       type="button"
                       className="submission__cancel"
-                      onClick={() => setEditorDesk("album")}
+                      onClick={editingArtist ? cancelArtistEdit : () => setEditorDesk("album")}
                     >
-                      앨범 등록으로
+                      {editingArtist ? "수정 취소" : "앨범 등록으로"}
                     </button>
                     <button type="submit" className="submission__primary" disabled={savingArtist}>
-                      {savingArtist ? "등록 중…" : "아티스트 등록"}
+                      {savingArtist ? "저장 중…" : editingArtist ? "수정 저장" : "아티스트 등록"}
                     </button>
                   </div>
                 </fieldset>
@@ -499,7 +567,43 @@ export function SubmissionSheet({ open, onClose, onSubmitted }: Props) {
                   )}
                   {!artistsError && (
                     <ul>
-                      {editorArtists.map((artist) => <li key={artist.id}>{artist.name}</li>)}
+                      {editorArtists.map((artist) => (
+                        <li key={artist.id}>
+                          <div className="submission__artist-summary">
+                            <strong>{artist.name}</strong>
+                            <span>
+                              {artist.albumCount === null
+                                ? "앨범 수 확인 필요"
+                                : `앨범 ${artist.albumCount}장`}
+                            </span>
+                          </div>
+                          <div className="submission__artist-actions">
+                            <button
+                              type="button"
+                              onClick={() => startArtistEdit(artist)}
+                              disabled={deletingArtistId === artist.id}
+                              aria-label={`${artist.name} 수정`}
+                            >
+                              수정
+                            </button>
+                            <button
+                              type="button"
+                              onClick={() => void deleteArtist(artist)}
+                              disabled={artist.albumCount !== 0 || deletingArtistId === artist.id}
+                              title={
+                                artist.albumCount === null
+                                  ? "앨범 수를 확인할 수 없습니다. 최신 마이그레이션을 적용해 주세요."
+                                  : artist.albumCount > 0
+                                    ? "앨범이 연결된 아티스트는 삭제할 수 없습니다."
+                                    : undefined
+                              }
+                              aria-label={`${artist.name} 삭제`}
+                            >
+                              {deletingArtistId === artist.id ? "삭제 중…" : "삭제"}
+                            </button>
+                          </div>
+                        </li>
+                      ))}
                       {!artistsLoading && editorArtists.length === 0 && (
                         <li>아직 등록된 아티스트가 없습니다.</li>
                       )}

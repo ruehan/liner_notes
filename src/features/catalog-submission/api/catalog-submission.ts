@@ -27,6 +27,7 @@ export interface EditorAlbum {
 export interface EditorArtist {
   id: string;
   name: string;
+  albumCount: number | null;
 }
 
 export interface UploadedCover {
@@ -175,7 +176,18 @@ export async function fetchEditorArtists(): Promise<EditorArtist[]> {
   if (!supabase) throw new Error("Supabase 연결 정보가 없습니다.");
   const { data, error } = await supabase.rpc("list_catalog_artists");
   if (error) throw new Error(error.message);
-  return Array.isArray(data) ? (data as EditorArtist[]) : [];
+  if (!Array.isArray(data)) return [];
+
+  return data.map((value) => {
+    const artist = value as Omit<EditorArtist, "albumCount"> & { albumCount?: unknown };
+    return {
+      ...artist,
+      albumCount:
+        typeof artist.albumCount === "number" && Number.isInteger(artist.albumCount)
+          ? artist.albumCount
+          : null,
+    };
+  });
 }
 
 export async function submitCatalogArtist(name: string): Promise<EditorArtist> {
@@ -187,5 +199,27 @@ export async function submitCatalogArtist(name: string): Promise<EditorArtist> {
     p_name: trimmedName,
   });
   if (error) throw new Error(error.message);
-  return { id: data as string, name: trimmedName };
+  return { id: data as string, name: trimmedName, albumCount: 0 };
+}
+
+export async function updateCatalogArtist(artistId: string, name: string): Promise<string> {
+  const trimmedName = name.trim();
+  if (!trimmedName) throw new Error("아티스트 이름을 입력해 주세요.");
+  if (!supabase) throw new Error("Supabase 연결 정보가 없습니다.");
+
+  const { data, error } = await supabase.rpc("update_catalog_artist", {
+    p_artist_id: artistId,
+    p_name: trimmedName,
+  });
+  if (error) throw new Error(error.message);
+  return data as string;
+}
+
+export async function deleteCatalogArtist(artistId: string): Promise<void> {
+  if (!supabase) throw new Error("Supabase 연결 정보가 없습니다.");
+
+  const { error } = await supabase.rpc("delete_catalog_artist", {
+    p_artist_id: artistId,
+  });
+  if (error) throw new Error(error.message);
 }
