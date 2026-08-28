@@ -1,9 +1,12 @@
 # Supabase catalogue setup
 
 1. In the Supabase dashboard, open **SQL Editor** and run the migrations in
-   filename order. Projects that have already run the first migration only
-   need to run
-   [`20260819001000_remove_album_genre_and_tags.sql`](./migrations/20260819001000_remove_album_genre_and_tags.sql).
+   filename order. Existing projects only need to run migrations they have not
+   already applied, including
+   [`20260820000000_add_catalog_editors.sql`](./migrations/20260820000000_add_catalog_editors.sql)
+   for the in-app registration desk and
+   [`20260820001000_add_catalog_editing.sql`](./migrations/20260820001000_add_catalog_editing.sql)
+   to edit existing records.
 2. Add artists, albums, and tracks. Albums require `artist_id`, `title`,
    `label`, `year`, and `description`; `genre` and `tags` are not database
    fields. The wall assigns its visual filter colour automatically. Mark
@@ -35,3 +38,24 @@ album detail sheet. URLs are converted to video IDs before reaching the player.
 `react-youtube` player only loads after a visitor chooses an album or track to
 play, and explains unavailable or embed-blocked videos in the UI. Do not add a
 service-role key to `.env.local`.
+
+## Editor registration desk
+
+The **add** button in the top-right corner opens the album registration desk.
+It is intentionally limited to editor accounts: create an email/password user
+in **Authentication → Users**, then run this once in SQL Editor with that
+user's UUID:
+
+```sql
+insert into public.editors (user_id)
+values ('AUTH_USER_UUID')
+on conflict (user_id) do nothing;
+```
+
+Sign in with that account in the app to create an artist (or reuse an existing
+one), its album, and every entered track in one transaction. The same screen
+lists every stored album for an editor; select one to update its metadata and
+tracklist. Updating replaces the album's track rows atomically, so do not add
+other tables that reference `tracks.id` without changing the update function.
+The editor policy does not grant anonymous write access; do not add an
+unauthenticated insert policy to these tables.

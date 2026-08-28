@@ -1,0 +1,110 @@
+import { supabase } from "@/shared/api/supabase";
+import type { CatalogAlbumInput } from "../model/form";
+
+export interface EditorTrack {
+  id: string;
+  title: string;
+  durationSeconds: number;
+  description: string;
+  youtubeVideoId: string | null;
+  youtubeStartSeconds: number | null;
+  youtubeEndSeconds: number | null;
+}
+
+export interface EditorAlbum {
+  id: string;
+  artistName: string;
+  title: string;
+  label: string;
+  year: number;
+  description: string;
+  coverPath: string | null;
+  featured: boolean;
+  sortOrder: number;
+  tracks: EditorTrack[];
+}
+
+export type SubmissionAccess =
+  | { status: "loading" }
+  | { status: "unconfigured" }
+  | { status: "signed-out" }
+  | { status: "editor"; email: string | null }
+  | { status: "forbidden"; email: string | null }
+  | { status: "error"; message: string };
+
+export async function getSubmissionAccess(): Promise<SubmissionAccess> {
+  if (!supabase) return { status: "unconfigured" };
+
+  const {
+    data: { session },
+    error: sessionError,
+  } = await supabase.auth.getSession();
+  if (sessionError) return { status: "error", message: sessionError.message };
+  if (!session) return { status: "signed-out" };
+
+  const { data: isEditor, error } = await supabase.rpc("is_editor");
+  if (error) return { status: "error", message: error.message };
+
+  return isEditor
+    ? { status: "editor", email: session.user.email ?? null }
+    : { status: "forbidden", email: session.user.email ?? null };
+}
+
+export async function signInEditor(email: string, password: string): Promise<void> {
+  if (!supabase) throw new Error("Supabase 연결 정보가 없습니다.");
+  const { error } = await supabase.auth.signInWithPassword({ email, password });
+  if (error) throw new Error(error.message);
+}
+
+export async function signOutEditor(): Promise<void> {
+  if (!supabase) return;
+  const { error } = await supabase.auth.signOut();
+  if (error) throw new Error(error.message);
+}
+
+export async function submitCatalogAlbum(input: CatalogAlbumInput): Promise<string> {
+  if (!supabase) throw new Error("Supabase 연결 정보가 없습니다.");
+
+  const { data, error } = await supabase.rpc("create_catalog_album", {
+    p_artist_name: input.artistName,
+    p_title: input.title,
+    p_label: input.label,
+    p_year: input.year,
+    p_description: input.description,
+    p_cover_path: input.coverPath,
+    p_featured: input.featured,
+    p_sort_order: input.sortOrder,
+    p_tracks: input.tracks,
+  });
+  if (error) throw new Error(error.message);
+  return data as string;
+}
+
+export async function updateCatalogAlbum(
+  albumId: string,
+  input: CatalogAlbumInput,
+): Promise<string> {
+  if (!supabase) throw new Error("Supabase 연결 정보가 없습니다.");
+
+  const { data, error } = await supabase.rpc("update_catalog_album", {
+    p_album_id: albumId,
+    p_artist_name: input.artistName,
+    p_title: input.title,
+    p_label: input.label,
+    p_year: input.year,
+    p_description: input.description,
+    p_cover_path: input.coverPath,
+    p_featured: input.featured,
+    p_sort_order: input.sortOrder,
+    p_tracks: input.tracks,
+  });
+  if (error) throw new Error(error.message);
+  return data as string;
+}
+
+export async function fetchEditorAlbums(): Promise<EditorAlbum[]> {
+  if (!supabase) throw new Error("Supabase 연결 정보가 없습니다.");
+  const { data, error } = await supabase.rpc("list_catalog_albums");
+  if (error) throw new Error(error.message);
+  return Array.isArray(data) ? (data as EditorAlbum[]) : [];
+}

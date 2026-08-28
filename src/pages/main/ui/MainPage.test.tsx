@@ -212,4 +212,14 @@ describe("MainPage", () => {
     fireEvent.click(screen.getByRole("button", { name: "← 벽으로 돌아가기" }));
     expect(screen.queryByText("about this archive")).not.toBeInTheDocument();
   });
+
+  it("상단 add 버튼으로 앨범 등록 화면을 연다", async () => {
+    await renderLoadedPage();
+    fireEvent.click(screen.getByRole("button", { name: /^add/ }));
+
+    expect(screen.getByRole("dialog", { name: "앨범 등록" })).toBeInTheDocument();
+
+    fireEvent.keyDown(window, { key: "Escape" });
+    expect(screen.queryByRole("dialog", { name: "앨범 등록" })).not.toBeInTheDocument();
+  });
 });

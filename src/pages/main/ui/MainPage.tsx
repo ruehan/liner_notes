@@ -20,6 +20,7 @@ import { Boot } from "@/widgets/boot";
 import { Catalog, type CatalogEntry } from "@/widgets/catalog";
 import { About } from "@/widgets/about";
 import { ShuffleButton, pickShuffleIndex } from "@/features/shuffle";
+import { SubmissionSheet } from "@/features/catalog-submission";
 import {
   databaseFavKey,
   loadFavorites,
@@ -54,20 +55,28 @@ export function MainPage() {
   const [hintGone, setHintGone] = useState(false);
   const [catalogOpen, setCatalogOpen] = useState(false);
   const [aboutOpen, setAboutOpen] = useState(false);
+  const [submissionOpen, setSubmissionOpen] = useState(false);
   const [favorites, setFavorites] = useState<string[]>(() => loadFavorites());
 
   const wallRef = useRef<WallHandle>(null);
   const hotTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
 
+  const requestFeaturedAlbums = useCallback(() => fetchFeaturedAlbums(), []);
+
+  const refreshFeaturedAlbums = useCallback(async () => {
+    const albums = await requestFeaturedAlbums();
+    if (albums) setFeaturedAlbums(albums);
+  }, [requestFeaturedAlbums]);
+
   useEffect(() => {
     let active = true;
-    void fetchFeaturedAlbums().then((albums) => {
+    void requestFeaturedAlbums().then((albums) => {
       if (active && albums) setFeaturedAlbums(albums);
     });
     return () => {
       active = false;
     };
-  }, []);
+  }, [requestFeaturedAlbums]);
 
   useEffect(() => {
     const t = setTimeout(() => setHintGone(true), 6000);
@@ -187,20 +196,21 @@ export function MainPage() {
       const target = e.target as HTMLElement | null;
       if (target && ["INPUT", "TEXTAREA"].includes(target.tagName)) return;
       if (e.key === "Escape") {
-        if (catalogOpen) setCatalogOpen(false);
+        if (submissionOpen) setSubmissionOpen(false);
+        else if (catalogOpen) setCatalogOpen(false);
         else if (aboutOpen) setAboutOpen(false);
         else if (openEntry) closeDetail();
       }
-      if ((e.key === "r" || e.key === "R") && !openEntry && !catalogOpen && !aboutOpen) {
+      if ((e.key === "r" || e.key === "R") && !openEntry && !catalogOpen && !aboutOpen && !submissionOpen) {
         shuffle();
       }
-      if ((e.key === "i" || e.key === "I") && !openEntry && !catalogOpen && !aboutOpen) {
+      if ((e.key === "i" || e.key === "I") && !openEntry && !catalogOpen && !aboutOpen && !submissionOpen) {
         setCatalogOpen(true);
       }
     };
     window.addEventListener("keydown", onKeyDown);
     return () => window.removeEventListener("keydown", onKeyDown);
-  }, [shuffle, openEntry, catalogOpen, aboutOpen, closeDetail]);
+  }, [shuffle, openEntry, catalogOpen, aboutOpen, submissionOpen, closeDetail]);
 
   const renderTile = useCallback(
     (k: number, m: number) => {
@@ -262,6 +272,7 @@ export function MainPage() {
         catalogCount={catalogEntries.length}
         onCatalog={() => setCatalogOpen(true)}
         onAbout={() => setAboutOpen(true)}
+        onSubmit={() => setSubmissionOpen(true)}
       />
 
       <Readout
@@ -282,6 +293,11 @@ export function MainPage() {
         onOpenEntry={openFromCatalog}
       />
       <About open={aboutOpen} onClose={() => setAboutOpen(false)} />
+      <SubmissionSheet
+        open={submissionOpen}
+        onClose={() => setSubmissionOpen(false)}
+        onSubmitted={refreshFeaturedAlbums}
+      />
       <DetailSheet
         entry={openEntry}
         favorited={openEntry ? favorites.includes(openEntry.favoriteKey) : false}

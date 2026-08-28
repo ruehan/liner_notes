@@ -4,9 +4,10 @@ interface Props {
   catalogCount: number;
   onCatalog: () => void;
   onAbout: () => void;
+  onSubmit: () => void;
 }
 
-export function Hud({ catalogCount, onCatalog, onAbout }: Props) {
+export function Hud({ catalogCount, onCatalog, onAbout, onSubmit }: Props) {
   return (
     <header className="hud">
       <a className="logo" href="/">
@@ -25,6 +26,9 @@ export function Hud({ catalogCount, onCatalog, onAbout }: Props) {
         </button>
         <button type="button" className="hud-pill" onClick={onAbout}>
           about
+        </button>
+        <button type="button" className="hud-pill hud-pill--submit" onClick={onSubmit}>
+          add
         </button>
       </div>
     </header>
