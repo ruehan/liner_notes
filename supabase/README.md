@@ -8,7 +8,9 @@
    [`20260820001000_add_catalog_editing.sql`](./migrations/20260820001000_add_catalog_editing.sql)
    to edit existing records, and
    [`20260820002000_allow_editor_cover_uploads.sql`](./migrations/20260820002000_allow_editor_cover_uploads.sql)
-   to upload cover images from the registration desk.
+   to upload cover images from the registration desk, and
+   [`20260820003000_add_catalog_artist_management.sql`](./migrations/20260820003000_add_catalog_artist_management.sql)
+   to add and select artists from the registration desk.
 2. Add artists, albums, and tracks. Albums require `artist_id`, `title`,
    `label`, `year`, and `description`; `genre` and `tags` are not database
    fields. The wall assigns its visual filter colour automatically. Mark
@@ -54,11 +56,11 @@ values ('AUTH_USER_UUID')
 on conflict (user_id) do nothing;
 ```
 
-Sign in with that account in the app to create an artist (or reuse an existing
-one), its album, and every entered track in one transaction. The same screen
-lists every stored album for an editor; select one to update its metadata and
-tracklist. Updating replaces the album's track rows atomically, so do not add
-other tables that reference `tracks.id` without changing the update function.
+Sign in with that account in the app to register an artist first, then select
+one of the registered artists while creating an album and its tracks. The same
+screen lists every stored album for an editor; select one to update its metadata
+and tracklist. Updating replaces the album's track rows atomically, so do not
+add other tables that reference `tracks.id` without changing the update function.
 Editors can also drag in or select a JPG, PNG, or WebP cover image up to 5MB;
 the image is uploaded to `album-covers` with a new filename and its Storage
 path is connected to the form automatically. Existing cover files are never

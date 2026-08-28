@@ -2,14 +2,17 @@ import { useCallback, useEffect, useRef, useState, type FormEvent } from "react"
 import {
   coverPreviewUrl,
   fetchEditorAlbums,
+  fetchEditorArtists,
   getSubmissionAccess,
   signInEditor,
   signOutEditor,
   submitCatalogAlbum,
+  submitCatalogArtist,
   uploadAlbumCover,
   updateCatalogAlbum,
   validateCoverFile,
   type EditorAlbum,
+  type EditorArtist,
   type SubmissionAccess,
 } from "../api/catalog-submission";
 import {
@@ -28,6 +31,7 @@ interface Props {
 }
 
 type TrackField = Exclude<keyof TrackDraft, "key">;
+type EditorDesk = "album" | "artist";
 
 function messageFrom(error: unknown): string {
   return error instanceof Error ? error.message : "등록 중 문제가 발생했습니다.";
@@ -75,9 +79,16 @@ export function SubmissionSheet({ open, onClose, onSubmitted }: Props) {
   const [localCoverPreview, setLocalCoverPreview] = useState<string | null>(null);
   const [coverDropActive, setCoverDropActive] = useState(false);
   const [editorAlbums, setEditorAlbums] = useState<EditorAlbum[]>([]);
+  const [editorArtists, setEditorArtists] = useState<EditorArtist[]>([]);
   const [albumsLoading, setAlbumsLoading] = useState(false);
   const [albumsError, setAlbumsError] = useState<string | null>(null);
+  const [artistsLoading, setArtistsLoading] = useState(false);
+  const [artistsError, setArtistsError] = useState<string | null>(null);
   const [editingAlbumId, setEditingAlbumId] = useState<string | null>(null);
+  const [editorDesk, setEditorDesk] = useState<EditorDesk>("album");
+  const [artistName, setArtistName] = useState("");
+  const [artistError, setArtistError] = useState<string | null>(null);
+  const [savingArtist, setSavingArtist] = useState(false);
   const trackKey = useRef(1);
 
   const refreshAccess = useCallback(async () => {
@@ -97,6 +108,18 @@ export function SubmissionSheet({ open, onClose, onSubmitted }: Props) {
     }
   }, []);
 
+  const loadEditorArtists = useCallback(async () => {
+    setArtistsLoading(true);
+    setArtistsError(null);
+    try {
+      setEditorArtists(await fetchEditorArtists());
+    } catch (error) {
+      setArtistsError(messageFrom(error));
+    } finally {
+      setArtistsLoading(false);
+    }
+  }, []);
+
   useEffect(() => {
     if (!open) {
       setLocalCoverPreview(null);
@@ -109,8 +132,13 @@ export function SubmissionSheet({ open, onClose, onSubmitted }: Props) {
     setNotice(null);
     setLoginError(null);
     setEditorAlbums([]);
+    setEditorArtists([]);
     setAlbumsError(null);
+    setArtistsError(null);
     setEditingAlbumId(null);
+    setEditorDesk("album");
+    setArtistName("");
+    setArtistError(null);
     setCoverUploadError(null);
     void refreshAccess();
   }, [open, refreshAccess]);
@@ -123,7 +151,8 @@ export function SubmissionSheet({ open, onClose, onSubmitted }: Props) {
   useEffect(() => {
     if (!open || access.status !== "editor") return;
     void loadEditorAlbums();
-  }, [open, access.status, loadEditorAlbums]);
+    void loadEditorArtists();
+  }, [open, access.status, loadEditorAlbums, loadEditorArtists]);
 
   if (!open) return null;
 
@@ -200,6 +229,30 @@ export function SubmissionSheet({ open, onClose, onSubmitted }: Props) {
     }
   };
 
+  const handleArtistSubmit = async (event: FormEvent<HTMLFormElement>) => {
+    event.preventDefault();
+    const name = artistName.trim();
+    if (!name) {
+      setArtistError("아티스트 이름을 입력해 주세요.");
+      return;
+    }
+
+    setSavingArtist(true);
+    setArtistError(null);
+    try {
+      const artist = await submitCatalogArtist(name);
+      await loadEditorArtists();
+      setDraft((current) => ({ ...current, artistName: artist.name }));
+      setArtistName("");
+      setEditorDesk("album");
+      setNotice(`“${artist.name}” 아티스트를 등록하고 앨범 입력에 선택했습니다.`);
+    } catch (error) {
+      setArtistError(messageFrom(error));
+    } finally {
+      setSavingArtist(false);
+    }
+  };
+
   const handleSignOut = async () => {
     try {
       await signOutEditor();
@@ -270,7 +323,12 @@ export function SubmissionSheet({ open, onClose, onSubmitted }: Props) {
   const coverPreview = localCoverPreview ?? coverPreviewUrl(draft.coverPath);
 
   return (
-    <div className="submission" role="dialog" aria-modal="true" aria-label="앨범 등록">
+    <div
+      className="submission"
+      role="dialog"
+      aria-modal="true"
+      aria-label={editorDesk === "artist" ? "아티스트 등록" : "앨범 등록"}
+    >
       <div className="submission__scrim" onClick={onClose} />
       <section className="submission__sheet">
         <button
@@ -291,9 +349,13 @@ export function SubmissionSheet({ open, onClose, onSubmitted }: Props) {
         </button>
 
         <p className="submission__head">editor desk</p>
-        <h1 className="submission__title">{editingAlbumId ? "앨범 수정" : "앨범 등록"}</h1>
+        <h1 className="submission__title">
+          {editorDesk === "artist" ? "아티스트 등록" : editingAlbumId ? "앨범 수정" : "앨범 등록"}
+        </h1>
         <p className="submission__lead">
-          새 기록을 남기거나 기존 앨범을 불러와 수정할 수 있습니다. YouTube 주소는 저장 전에 영상 ID로 정리됩니다.
+          {editorDesk === "artist"
+            ? "아티스트를 먼저 등록하면 앨범 입력에서 바로 선택할 수 있습니다."
+            : "등록된 아티스트를 선택해 새 기록을 남기거나 기존 앨범을 불러와 수정할 수 있습니다."}
         </p>
 
         {access.status === "loading" && (
@@ -358,13 +420,96 @@ export function SubmissionSheet({ open, onClose, onSubmitted }: Props) {
         )}
 
         {access.status === "editor" && (
-          <form className="submission__form" onSubmit={handleSubmit}>
+          <section className="submission__form">
             <div className="submission__account">
               <span>{access.email ?? "편집자"}로 로그인됨</span>
               <button type="button" onClick={() => void handleSignOut()}>로그아웃</button>
             </div>
 
-            <div className="submission__workspace">
+            <div className="submission__tabs" role="tablist" aria-label="등록 종류">
+              <button
+                type="button"
+                role="tab"
+                aria-selected={editorDesk === "album"}
+                className={editorDesk === "album" ? "is-active" : undefined}
+                onClick={() => setEditorDesk("album")}
+              >
+                앨범 등록
+              </button>
+              <button
+                type="button"
+                role="tab"
+                aria-selected={editorDesk === "artist"}
+                className={editorDesk === "artist" ? "is-active" : undefined}
+                onClick={() => setEditorDesk("artist")}
+              >
+                아티스트 등록
+              </button>
+            </div>
+
+            {editorDesk === "artist" ? (
+              <form className="submission__artist-form" onSubmit={handleArtistSubmit}>
+                <fieldset>
+                  <legend>아티스트 정보</legend>
+                  <label>
+                    아티스트 이름 <b>*</b>
+                    <input
+                      value={artistName}
+                      onChange={(event) => setArtistName(event.target.value)}
+                      placeholder="예: 김사월"
+                      autoFocus
+                      required
+                    />
+                  </label>
+                  {artistError && (
+                    <p className="submission__error" role="alert">
+                      {artistError}
+                    </p>
+                  )}
+                  <div className="submission__actions">
+                    <button
+                      type="button"
+                      className="submission__cancel"
+                      onClick={() => setEditorDesk("album")}
+                    >
+                      앨범 등록으로
+                    </button>
+                    <button type="submit" className="submission__primary" disabled={savingArtist}>
+                      {savingArtist ? "등록 중…" : "아티스트 등록"}
+                    </button>
+                  </div>
+                </fieldset>
+
+                <section className="submission__artist-list" aria-label="등록된 아티스트">
+                  <div>
+                    <strong>등록된 아티스트</strong>
+                    <button
+                      type="button"
+                      className="submission__text-button"
+                      onClick={() => void loadEditorArtists()}
+                      disabled={artistsLoading}
+                    >
+                      {artistsLoading ? "불러오는 중…" : "목록 새로고침"}
+                    </button>
+                  </div>
+                  {artistsError && (
+                    <p className="submission__error" role="alert">
+                      아티스트를 불러오지 못했습니다: {artistsError}
+                    </p>
+                  )}
+                  {!artistsError && (
+                    <ul>
+                      {editorArtists.map((artist) => <li key={artist.id}>{artist.name}</li>)}
+                      {!artistsLoading && editorArtists.length === 0 && (
+                        <li>아직 등록된 아티스트가 없습니다.</li>
+                      )}
+                    </ul>
+                  )}
+                </section>
+              </form>
+            ) : (
+              <form onSubmit={handleSubmit}>
+                <div className="submission__workspace">
               <label>
                 기존 앨범 불러오기
                 <select
@@ -396,12 +541,18 @@ export function SubmissionSheet({ open, onClose, onSubmitted }: Props) {
               <div className="submission__grid">
                 <label>
                   아티스트 <b>*</b>
-                  <input
+                  <select
                     value={draft.artistName}
                     onChange={(event) => setDraft((current) => ({ ...current, artistName: event.target.value }))}
-                    placeholder="예: 김사월"
                     required
-                  />
+                    disabled={artistsLoading}
+                  >
+                    <option value="">{artistsLoading ? "아티스트 불러오는 중…" : "등록된 아티스트 선택"}</option>
+                    {editorArtists.map((artist) => (
+                      <option key={artist.id} value={artist.name}>{artist.name}</option>
+                    ))}
+                  </select>
+                  {artistsError && <small className="submission__field-error">아티스트 목록을 불러오지 못했습니다.</small>}
                 </label>
                 <label>
                   앨범 제목 <b>*</b>
@@ -599,7 +750,9 @@ export function SubmissionSheet({ open, onClose, onSubmitted }: Props) {
                 {saving ? "저장 중…" : editingAlbumId ? "수정 저장" : "앨범 등록"}
               </button>
             </div>
-          </form>
+              </form>
+            )}
+          </section>
         )}
       </section>
     </div>

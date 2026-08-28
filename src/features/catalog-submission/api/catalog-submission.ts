@@ -24,6 +24,11 @@ export interface EditorAlbum {
   tracks: EditorTrack[];
 }
 
+export interface EditorArtist {
+  id: string;
+  name: string;
+}
+
 export interface UploadedCover {
   path: string;
   publicUrl: string;
@@ -164,4 +169,23 @@ export async function fetchEditorAlbums(): Promise<EditorAlbum[]> {
   const { data, error } = await supabase.rpc("list_catalog_albums");
   if (error) throw new Error(error.message);
   return Array.isArray(data) ? (data as EditorAlbum[]) : [];
+}
+
+export async function fetchEditorArtists(): Promise<EditorArtist[]> {
+  if (!supabase) throw new Error("Supabase 연결 정보가 없습니다.");
+  const { data, error } = await supabase.rpc("list_catalog_artists");
+  if (error) throw new Error(error.message);
+  return Array.isArray(data) ? (data as EditorArtist[]) : [];
+}
+
+export async function submitCatalogArtist(name: string): Promise<EditorArtist> {
+  const trimmedName = name.trim();
+  if (!trimmedName) throw new Error("아티스트 이름을 입력해 주세요.");
+  if (!supabase) throw new Error("Supabase 연결 정보가 없습니다.");
+
+  const { data, error } = await supabase.rpc("create_catalog_artist", {
+    p_name: trimmedName,
+  });
+  if (error) throw new Error(error.message);
+  return { id: data as string, name: trimmedName };
 }

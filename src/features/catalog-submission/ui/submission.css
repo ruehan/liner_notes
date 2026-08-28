@@ -117,6 +117,77 @@
 
 .submission__form { margin-top: 24px; }
 
+.submission__tabs {
+  display: flex;
+  gap: 6px;
+  margin-bottom: 18px;
+  padding: 5px;
+  border: 1px solid var(--line);
+  border-radius: 999px;
+  background: var(--card-deep);
+}
+
+.submission__tabs button {
+  flex: 1;
+  padding: 9px 12px;
+  border-radius: 999px;
+  color: var(--fg-dim);
+  font-family: var(--mono);
+  font-size: var(--t-ui);
+  font-weight: 700;
+  letter-spacing: var(--tr-wide);
+  transition: background-color var(--dur-1), color var(--dur-1);
+}
+
+.submission__tabs button:hover,
+.submission__tabs button.is-active {
+  color: var(--bg);
+  background: var(--fg);
+}
+
+.submission__artist-form { display: grid; gap: 16px; }
+
+.submission__artist-form fieldset { margin-top: 0; }
+
+.submission__artist-list {
+  padding: 16px 18px;
+  border: 1px dashed var(--line);
+  border-radius: var(--r-ui);
+  background: var(--card-deep);
+}
+
+.submission__artist-list > div {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.submission__artist-list strong {
+  font-family: var(--mono);
+  font-size: var(--t-label);
+  letter-spacing: var(--tr-wider);
+  text-transform: uppercase;
+}
+
+.submission__artist-list ul {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 7px;
+  margin: 14px 0 0;
+  padding: 0;
+  list-style: none;
+}
+
+.submission__artist-list li {
+  padding: 5px 8px;
+  border: 1px solid var(--line);
+  border-radius: 999px;
+  color: var(--fg-dim);
+  font-family: var(--mono);
+  font-size: var(--t-micro);
+}
+
 .submission__workspace {
   display: flex;
   align-items: end;
@@ -198,6 +269,7 @@
 }
 
 .submission label b { color: var(--accent); }
+.submission__field-error { color: #8d211a; font-size: var(--t-micro); letter-spacing: normal; }
 
 .submission input,
 .submission textarea,
