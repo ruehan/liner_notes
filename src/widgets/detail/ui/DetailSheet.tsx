@@ -12,7 +12,6 @@ import "./detail.css";
 export interface OpenEntry {
   album: Album;
   catalog: string;
-  ordinal: number;
   favoriteKey: string;
 }
 
@@ -92,7 +91,7 @@ export function DetailSheet({
 
   if (!shown) return null;
 
-  const { album, catalog, ordinal } = shown;
+  const { album } = shown;
   const theme = GENRES[album.genre];
   const firstPlayableTrack = album.tracks.find((track) =>
     normalizeYouTubeVideoId(track.youtubeVideoId),
@@ -129,11 +128,6 @@ export function DetailSheet({
           </svg>
         </button>
 
-        <div className="detail__stamp" aria-hidden="true">
-          <span>{catalog}</span>
-          <span>filed {album.year}</span>
-        </div>
-
         <section
           className="detail__card"
           role="dialog"
@@ -141,15 +135,6 @@ export function DetailSheet({
           aria-label={`${album.title} 앨범 상세`}
         >
           <div className="detail__body">
-            <p className="detail__head">
-              album no.{String(ordinal).padStart(2, "0")}
-              <span
-                className="detail__head-tape"
-                style={{ background: theme.bg, color: theme.ink }}
-              >
-                {album.genre}
-              </span>
-            </p>
             <h1 className="detail__title">{album.title}</h1>
             <p className="detail__artist">{album.artist}</p>
             <p className="detail__phon">{theme.phon}</p>
@@ -312,13 +297,8 @@ export function DetailSheet({
                 <div className="detail__frame">
                   <CoverArt track={album.cover} imageUrl={album.coverUrl} />
                 </div>
-                <span className="detail__frame-no">{catalog}</span>
               </>
             )}
-          </div>
-
-          <div className="detail__entry-no" aria-hidden="true">
-            {String(ordinal).padStart(2, "0")}
           </div>
         </section>
       </div>

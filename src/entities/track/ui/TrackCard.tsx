@@ -4,7 +4,6 @@ import "./track-card.css";
 
 interface Props {
   album: Album;
-  catalog: string;
   ordinal: number;
   hot: boolean;
   favorited: boolean;
@@ -17,7 +16,6 @@ interface Props {
 
 export function AlbumCard({
   album,
-  catalog,
   ordinal,
   hot,
   favorited,
@@ -65,7 +63,6 @@ export function AlbumCard({
     >
       <div className="track-card__artwrap">
         <CoverArt track={album.cover} imageUrl={album.coverUrl} className="track-card__art" />
-        <span className="track-card__tape">{album.genre}</span>
         <button
           type="button"
           className={`track-card__fav${favorited ? " is-on" : ""}`}
@@ -81,7 +78,6 @@ export function AlbumCard({
         <span className="track-card__ordinal">{String(ordinal).padStart(2, "0")}</span>
       </div>
       <header className="track-card__head">
-        <span className="track-card__no">{catalog}</span>
         <h3 className="track-card__title">{album.title}</h3>
         <p className="track-card__byline">
           {album.artist}

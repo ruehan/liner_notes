@@ -106,7 +106,7 @@ export function MainPage() {
     const list: CatalogEntry[] = [];
     homeAlbums.forEach((album, i) => {
       const key = favoriteKeyFor(album);
-      list.push({ album, catalog: tileCatalog(0, 0, i), ordinal: i + 1, k: 0, m: 0, i, favoriteKey: key });
+      list.push({ album, catalog: tileCatalog(0, 0, i), k: 0, m: 0, i, favoriteKey: key });
     });
     return list;
   }, [favoriteKeyFor, homeAlbums]);
@@ -116,14 +116,12 @@ export function MainPage() {
       const nav: OpenEntry[] = list.map((e) => ({
         album: e.album,
         catalog: e.catalog,
-        ordinal: e.ordinal,
         favoriteKey: e.favoriteKey,
       }));
       setNavList(nav);
       setOpenEntry({
         album: entry.album,
         catalog: entry.catalog,
-        ordinal: entry.ordinal,
         favoriteKey: entry.favoriteKey,
       });
       setCatalogOpen(false);
@@ -224,7 +222,6 @@ export function MainPage() {
           <AlbumCard
             key={album.id}
             album={album}
-            catalog={catalog}
             ordinal={i + 1}
             hot={hotKey === key}
             favorited={favorites.includes(fvKey)}
@@ -238,14 +235,12 @@ export function MainPage() {
               const nav: OpenEntry[] = albums.map((item, j) => ({
                 album: item,
                 catalog: tileCatalog(k, m, j),
-                ordinal: j + 1,
                 favoriteKey: favoriteKeyFor(item),
               }));
               setNavList(nav);
               setOpenEntry({
                 album,
                 catalog,
-                ordinal: i + 1,
                 favoriteKey: fvKey,
               });
             }}

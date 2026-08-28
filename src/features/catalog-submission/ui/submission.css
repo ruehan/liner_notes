@@ -221,6 +221,94 @@
 .submission textarea::placeholder { color: var(--fg-faint); }
 .submission__wide { grid-column: 1 / -1; }
 
+.submission__cover {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 128px;
+  align-items: stretch;
+  gap: 12px;
+}
+
+.submission__cover-drop {
+  min-height: 128px;
+  align-items: center;
+  justify-content: center;
+  padding: 16px;
+  border: 1px dashed var(--line);
+  border-radius: var(--r-ui);
+  background: color-mix(in srgb, var(--card-deep) 52%, transparent);
+  color: var(--fg) !important;
+  cursor: pointer;
+  text-align: center;
+  transition: border-color var(--dur-1), background-color var(--dur-1), transform var(--dur-1);
+}
+
+.submission__cover-drop:hover,
+.submission__cover-drop.is-active {
+  border-color: var(--accent);
+  background: #fae1da;
+  transform: translateY(-1px);
+}
+
+.submission__cover-drop input {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip: rect(0 0 0 0);
+  white-space: nowrap;
+  clip-path: inset(50%);
+}
+
+.submission__cover-drop span {
+  font-family: var(--mono);
+  font-size: var(--t-ui);
+  font-weight: 700;
+  letter-spacing: var(--tr-wide);
+}
+
+.submission__cover-drop small {
+  color: var(--fg-faint);
+  font-family: var(--mono);
+  font-size: var(--t-micro);
+  letter-spacing: 0.04em;
+}
+
+.submission__cover-preview {
+  min-height: 128px;
+  overflow: hidden;
+  border: 1px solid var(--line-soft);
+  border-radius: var(--r-ui);
+  background: var(--card-deep);
+  display: grid;
+  place-items: center;
+}
+
+.submission__cover-preview img {
+  width: 100%;
+  height: 100%;
+  display: block;
+  object-fit: cover;
+}
+
+.submission__cover-preview span {
+  color: var(--fg-faint);
+  font-family: var(--mono);
+  font-size: var(--t-micro);
+  letter-spacing: var(--tr-wide);
+  text-transform: uppercase;
+}
+
+.submission__cover-path,
+.submission__cover-error {
+  grid-column: 1 / -1;
+}
+
+.submission__cover-error {
+  margin: 0;
+  color: #8d211a;
+  font-size: var(--t-ui);
+}
+
 .submission__options {
   display: flex;
   align-items: center;
@@ -319,6 +407,7 @@
   .submission__sheet { width: min(100vw - 20px, 880px); max-height: calc(100dvh - 20px); padding: 26px 18px; }
   .submission__grid,
   .submission__login { grid-template-columns: 1fr; }
+  .submission__cover { grid-template-columns: minmax(0, 1fr) 108px; }
   .submission__login > p,
   .submission__login > .submission__error,
   .submission__login > .submission__primary { grid-column: auto; }

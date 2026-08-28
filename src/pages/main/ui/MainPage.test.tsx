@@ -97,6 +97,8 @@ describe("MainPage", () => {
       expect(firstCard(album.title, album.artist)).toBeInTheDocument();
     }
     expect(screen.queryByRole("button", { name: /^all/ })).not.toBeInTheDocument();
+    expect(screen.queryByText("LNR-001")).not.toBeInTheDocument();
+    expect(screen.queryByText("ambient")).not.toBeInTheDocument();
   });
 
   it("앨범 카드를 클릭하면 수록곡 모달이 열리고 Escape로 닫힌다", async () => {
@@ -110,6 +112,8 @@ describe("MainPage", () => {
     expect(within(dialog).getByRole("list", { name: "수록곡" })).toHaveTextContent(
       album.tracks[0].title,
     );
+    expect(dialog).not.toHaveTextContent(/album no\./i);
+    expect(dialog).not.toHaveTextContent("LNR-001");
 
     fireEvent.keyDown(window, { key: "Escape" });
     await waitFor(() =>

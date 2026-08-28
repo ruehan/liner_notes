@@ -6,7 +6,6 @@ import "./catalog.css";
 export interface CatalogEntry {
   album: Album;
   catalog: string;
-  ordinal: number;
   k: number;
   m: number;
   i: number;

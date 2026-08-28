@@ -24,6 +24,63 @@ export interface EditorAlbum {
   tracks: EditorTrack[];
 }
 
+export interface UploadedCover {
+  path: string;
+  publicUrl: string;
+}
+
+const COVER_TYPES = new Map([
+  ["image/jpeg", "jpg"],
+  ["image/png", "png"],
+  ["image/webp", "webp"],
+]);
+const MAX_COVER_SIZE = 5 * 1024 * 1024;
+
+export function validateCoverFile(file: File): string | null {
+  if (!COVER_TYPES.has(file.type)) {
+    return "JPG, PNG 또는 WebP 이미지만 업로드할 수 있습니다.";
+  }
+  if (file.size > MAX_COVER_SIZE) {
+    return "커버 이미지는 5MB 이하여야 합니다.";
+  }
+  return null;
+}
+
+export function coverPreviewUrl(reference: string | null | undefined): string | null {
+  const trimmed = reference?.trim();
+  if (!trimmed) return null;
+  if (/^https?:\/\//i.test(trimmed)) return trimmed;
+  if (!supabase) return null;
+  return supabase.storage.from("album-covers").getPublicUrl(trimmed).data.publicUrl;
+}
+
+function uploadName(extension: string): string {
+  const unique =
+    typeof crypto !== "undefined" && "randomUUID" in crypto
+      ? crypto.randomUUID()
+      : `${Date.now()}-${Math.random().toString(36).slice(2)}`;
+  return `covers/${unique}.${extension}`;
+}
+
+export async function uploadAlbumCover(file: File): Promise<UploadedCover> {
+  const validationError = validateCoverFile(file);
+  if (validationError) throw new Error(validationError);
+  if (!supabase) throw new Error("Supabase 연결 정보가 없습니다.");
+
+  const path = uploadName(COVER_TYPES.get(file.type)!);
+  const { data, error } = await supabase.storage.from("album-covers").upload(path, file, {
+    cacheControl: "31536000",
+    contentType: file.type,
+    upsert: false,
+  });
+  if (error) throw new Error(error.message);
+
+  return {
+    path: data.path,
+    publicUrl: supabase.storage.from("album-covers").getPublicUrl(data.path).data.publicUrl,
+  };
+}
+
 export type SubmissionAccess =
   | { status: "loading" }
   | { status: "unconfigured" }

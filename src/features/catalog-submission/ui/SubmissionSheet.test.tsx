@@ -3,12 +3,15 @@ import { beforeEach, describe, expect, it, vi } from "vitest";
 import { SubmissionSheet } from "./SubmissionSheet";
 
 const api = vi.hoisted(() => ({
+  coverPreviewUrl: vi.fn(),
   getSubmissionAccess: vi.fn(),
   fetchEditorAlbums: vi.fn(),
   signInEditor: vi.fn(),
   signOutEditor: vi.fn(),
   submitCatalogAlbum: vi.fn(),
+  uploadAlbumCover: vi.fn(),
   updateCatalogAlbum: vi.fn(),
+  validateCoverFile: vi.fn(),
 }));
 
 vi.mock("../api/catalog-submission", () => api);
@@ -38,6 +41,7 @@ const storedAlbum = {
 
 describe("SubmissionSheet", () => {
   beforeEach(() => {
+    api.coverPreviewUrl.mockReset().mockReturnValue(null);
     api.getSubmissionAccess.mockReset().mockResolvedValue({
       status: "editor",
       email: "editor@example.com",
@@ -45,6 +49,8 @@ describe("SubmissionSheet", () => {
     api.fetchEditorAlbums.mockReset().mockResolvedValue([storedAlbum]);
     api.updateCatalogAlbum.mockReset().mockResolvedValue("album-1");
     api.submitCatalogAlbum.mockReset().mockResolvedValue("album-2");
+    api.uploadAlbumCover.mockReset();
+    api.validateCoverFile.mockReset().mockReturnValue(null);
   });
 
   it("기존 앨범과 수록곡을 불러와 수정 저장한다", async () => {

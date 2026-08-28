@@ -67,28 +67,6 @@
   height: 46%;
 }
 
-.detail__stamp {
-  position: absolute;
-  top: clamp(18px, 4vh, 44px);
-  right: clamp(18px, 4vw, 56px);
-  z-index: 15;
-  display: flex;
-  flex-direction: column;
-  gap: 2px;
-  padding: 10px 16px;
-  border: 2px solid var(--accent);
-  border-radius: 4px;
-  color: var(--accent);
-  font-family: var(--mono);
-  font-size: var(--t-label);
-  font-weight: 700;
-  letter-spacing: var(--tr-wide);
-  text-transform: uppercase;
-  transform: rotate(5deg);
-  opacity: 0.88;
-  mask-image: radial-gradient(rgba(0, 0, 0, 0.96) 96%, rgba(0, 0, 0, 0.4));
-}
-
 .detail__card {
   position: absolute;
   inset: 0;
@@ -114,26 +92,6 @@
   max-height: calc(100vh - 18vh);
   padding-right: 12px;
   overflow-y: auto;
-}
-
-.detail__head {
-  display: flex;
-  align-items: center;
-  gap: 10px;
-  margin: 0 0 16px;
-  font-family: var(--mono);
-  font-size: var(--t-label);
-  font-weight: 700;
-  letter-spacing: var(--tr-wider);
-  text-transform: uppercase;
-  color: var(--fg-dim);
-}
-
-.detail__head-tape {
-  padding: 3px 10px 4px;
-  border-radius: 2px;
-  letter-spacing: 0.12em;
-  transform: rotate(-1.6deg);
 }
 
 .detail__title {
@@ -539,32 +497,6 @@
   filter: saturate(0.8);
 }
 
-.detail__frame-no {
-  position: absolute;
-  bottom: -30px;
-  left: 50%;
-  transform: translateX(-50%) rotate(-1.4deg);
-  font-family: var(--mono);
-  font-size: var(--t-micro);
-  letter-spacing: var(--tr-wider);
-  text-transform: uppercase;
-  color: var(--fg-faint);
-}
-
-.detail__entry-no {
-  position: absolute;
-  right: 2vw;
-  bottom: 0;
-  font-family: var(--display);
-  font-size: var(--t-entry);
-  font-weight: 600;
-  line-height: 0.82;
-  letter-spacing: -0.04em;
-  color: var(--fg);
-  opacity: 0.08;
-  pointer-events: none;
-}
-
 @media (max-width: 760px) {
   .detail__card {
     grid-template-columns: 1fr;
@@ -592,15 +524,6 @@
 
   .detail__player {
     width: min(84vw, 560px);
-  }
-
-  .detail__stamp {
-    top: auto;
-    bottom: clamp(14px, 3vh, 28px);
-  }
-
-  .detail__entry-no {
-    display: none;
   }
 
   .detail__tracks {

@@ -1,11 +1,14 @@
 import { useCallback, useEffect, useRef, useState, type FormEvent } from "react";
 import {
+  coverPreviewUrl,
   fetchEditorAlbums,
   getSubmissionAccess,
   signInEditor,
   signOutEditor,
   submitCatalogAlbum,
+  uploadAlbumCover,
   updateCatalogAlbum,
+  validateCoverFile,
   type EditorAlbum,
   type SubmissionAccess,
 } from "../api/catalog-submission";
@@ -67,6 +70,10 @@ export function SubmissionSheet({ open, onClose, onSubmitted }: Props) {
   const [notice, setNotice] = useState<string | null>(null);
   const [loggingIn, setLoggingIn] = useState(false);
   const [saving, setSaving] = useState(false);
+  const [uploadingCover, setUploadingCover] = useState(false);
+  const [coverUploadError, setCoverUploadError] = useState<string | null>(null);
+  const [localCoverPreview, setLocalCoverPreview] = useState<string | null>(null);
+  const [coverDropActive, setCoverDropActive] = useState(false);
   const [editorAlbums, setEditorAlbums] = useState<EditorAlbum[]>([]);
   const [albumsLoading, setAlbumsLoading] = useState(false);
   const [albumsError, setAlbumsError] = useState<string | null>(null);
@@ -91,7 +98,10 @@ export function SubmissionSheet({ open, onClose, onSubmitted }: Props) {
   }, []);
 
   useEffect(() => {
-    if (!open) return;
+    if (!open) {
+      setLocalCoverPreview(null);
+      return;
+    }
 
     trackKey.current = 1;
     setDraft(createAlbumDraft());
@@ -101,8 +111,14 @@ export function SubmissionSheet({ open, onClose, onSubmitted }: Props) {
     setEditorAlbums([]);
     setAlbumsError(null);
     setEditingAlbumId(null);
+    setCoverUploadError(null);
     void refreshAccess();
   }, [open, refreshAccess]);
+
+  useEffect(() => {
+    if (!localCoverPreview) return;
+    return () => URL.revokeObjectURL(localCoverPreview);
+  }, [localCoverPreview]);
 
   useEffect(() => {
     if (!open || access.status !== "editor") return;
@@ -142,6 +158,8 @@ export function SubmissionSheet({ open, onClose, onSubmitted }: Props) {
     setDraft(createAlbumDraft());
     setFormErrors([]);
     setNotice(null);
+    setCoverUploadError(null);
+    setLocalCoverPreview(null);
   };
 
   const selectEditorAlbum = (albumId: string) => {
@@ -157,6 +175,8 @@ export function SubmissionSheet({ open, onClose, onSubmitted }: Props) {
     setEditingAlbumId(album.id);
     setDraft(draftFromEditorAlbum(album));
     setFormErrors([]);
+    setCoverUploadError(null);
+    setLocalCoverPreview(null);
     setNotice(`“${album.title}”을(를) 수정하는 중입니다.`);
   };
 
@@ -189,6 +209,29 @@ export function SubmissionSheet({ open, onClose, onSubmitted }: Props) {
     }
   };
 
+  const handleCoverFile = async (file: File | undefined) => {
+    if (!file || uploadingCover) return;
+    const validationError = validateCoverFile(file);
+    if (validationError) {
+      setCoverUploadError(validationError);
+      return;
+    }
+
+    setCoverUploadError(null);
+    setLocalCoverPreview(URL.createObjectURL(file));
+    setUploadingCover(true);
+    try {
+      const uploaded = await uploadAlbumCover(file);
+      setDraft((current) => ({ ...current, coverPath: uploaded.path }));
+      setNotice("커버 이미지를 업로드했습니다. 앨범 저장을 눌러 반영하세요.");
+    } catch (error) {
+      setLocalCoverPreview(null);
+      setCoverUploadError(messageFrom(error));
+    } finally {
+      setUploadingCover(false);
+    }
+  };
+
   const handleSubmit = async (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault();
     const result = buildCatalogAlbumInput(draft);
@@ -214,6 +257,7 @@ export function SubmissionSheet({ open, onClose, onSubmitted }: Props) {
       } else {
         trackKey.current = 1;
         setDraft(createAlbumDraft());
+        setLocalCoverPreview(null);
         setNotice("앨범과 수록곡을 등록했습니다. 홈 벽을 새로 반영했어요.");
       }
     } catch (error) {
@@ -222,6 +266,8 @@ export function SubmissionSheet({ open, onClose, onSubmitted }: Props) {
       setSaving(false);
     }
   };
+
+  const coverPreview = localCoverPreview ?? coverPreviewUrl(draft.coverPath);
 
   return (
     <div className="submission" role="dialog" aria-modal="true" aria-label="앨범 등록">
@@ -385,14 +431,53 @@ export function SubmissionSheet({ open, onClose, onSubmitted }: Props) {
                     required
                   />
                 </label>
-                <label className="submission__wide">
-                  커버 URL 또는 Storage 경로
-                  <input
-                    value={draft.coverPath}
-                    onChange={(event) => setDraft((current) => ({ ...current, coverPath: event.target.value }))}
-                    placeholder="https://… 또는 covers/album.webp"
-                  />
-                </label>
+                <div className="submission__wide submission__cover">
+                  <label
+                    className={`submission__cover-drop${coverDropActive ? " is-active" : ""}`}
+                    onDragOver={(event) => {
+                      event.preventDefault();
+                      if (!uploadingCover) setCoverDropActive(true);
+                    }}
+                    onDragLeave={() => setCoverDropActive(false)}
+                    onDrop={(event) => {
+                      event.preventDefault();
+                      setCoverDropActive(false);
+                      void handleCoverFile(event.dataTransfer.files[0]);
+                    }}
+                  >
+                    <input
+                      type="file"
+                      accept="image/jpeg,image/png,image/webp"
+                      onChange={(event) => {
+                        const file = event.currentTarget.files?.[0];
+                        event.currentTarget.value = "";
+                        void handleCoverFile(file);
+                      }}
+                      disabled={uploadingCover}
+                    />
+                    <span>{uploadingCover ? "커버 업로드 중…" : "커버 파일을 끌어놓거나 선택"}</span>
+                    <small>JPG · PNG · WebP / 최대 5MB</small>
+                  </label>
+                  <div className="submission__cover-preview">
+                    {coverPreview ? (
+                      <img src={coverPreview} alt="커버 미리보기" />
+                    ) : (
+                      <span>cover preview</span>
+                    )}
+                  </div>
+                  <label className="submission__cover-path">
+                    커버 URL 또는 Storage 경로
+                    <input
+                      value={draft.coverPath}
+                      onChange={(event) => {
+                        setLocalCoverPreview(null);
+                        setDraft((current) => ({ ...current, coverPath: event.target.value }));
+                      }}
+                      placeholder="https://… 또는 covers/album.webp"
+                    />
+                  </label>
+                  {coverUploadError && <p className="submission__cover-error" role="alert">{coverUploadError}</p>}
+                </div>
                 <label className="submission__wide">
                   앨범 소개
                   <textarea
