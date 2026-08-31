@@ -9,6 +9,7 @@ import {
 } from "@/entities/track";
 import {
   WORLD,
+  createRng,
   generateMosaicSpots,
   type Point,
   type MosaicSpot,
@@ -24,10 +25,6 @@ import { ShuffleButton, pickShuffleIndex } from "@/features/shuffle";
 import {
   DEFAULT_PLAYBACK_VOLUME,
   PlayerDock,
-  clearPlaybackSession,
-  loadPlaybackSession,
-  restorePlaybackItem,
-  savePlaybackSession,
   stepTrack,
   type PlaybackItem,
 } from "@/features/playback";
@@ -56,8 +53,25 @@ function tileSpots(k: number, m: number, count: number): MosaicSpot[] {
   return spots;
 }
 
+function pageLayoutSeed(): number {
+  return Math.floor(Math.random() * 2_147_483_646) + 1;
+}
+
+function shuffleAlbumsForWall(albums: Album[], seed: number): Album[] {
+  const shuffled = [...albums];
+  const rng = createRng(seed);
+
+  for (let index = shuffled.length - 1; index > 0; index -= 1) {
+    const nextIndex = Math.floor(rng() * (index + 1));
+    [shuffled[index], shuffled[nextIndex]] = [shuffled[nextIndex], shuffled[index]];
+  }
+
+  return shuffled;
+}
+
 export function MainPage() {
   const [featuredAlbums, setFeaturedAlbums] = useState<Album[] | null>(null);
+  const [layoutSeed] = useState(pageLayoutSeed);
   const [tiles, setTiles] = useState<Point[]>([{ x: 0, y: 0 }]);
   const [openEntry, setOpenEntry] = useState<OpenEntry | null>(null);
   const [navList, setNavList] = useState<OpenEntry[] | null>(null);
@@ -70,16 +84,8 @@ export function MainPage() {
   const [submissionOpen, setSubmissionOpen] = useState(false);
   const [favorites, setFavorites] = useState<string[]>(() => loadFavorites());
   const [playback, setPlayback] = useState<PlaybackItem | null>(null);
-  const [initialPlaybackSession] = useState(() => loadPlaybackSession());
-  const [playbackRestored, setPlaybackRestored] = useState(
-    () => initialPlaybackSession === null,
-  );
-  const [playbackVolume, setPlaybackVolume] = useState(
-    () => initialPlaybackSession?.volume ?? DEFAULT_PLAYBACK_VOLUME,
-  );
-  const [playbackPosition, setPlaybackPosition] = useState(
-    () => initialPlaybackSession?.positionSeconds ?? 0,
-  );
+  const [playbackVolume, setPlaybackVolume] = useState(DEFAULT_PLAYBACK_VOLUME);
+  const [playbackPosition, setPlaybackPosition] = useState(0);
 
   const wallRef = useRef<WallHandle>(null);
   const hotTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
@@ -104,36 +110,6 @@ export function MainPage() {
   }, [requestFeaturedAlbums]);
 
   useEffect(() => {
-    if (playbackRestored || featuredAlbums === null) return;
-
-    const restored = initialPlaybackSession
-      ? restorePlaybackItem(featuredAlbums, initialPlaybackSession)
-      : null;
-    if (restored) {
-      setPlayback(restored);
-      setPlaybackPosition(initialPlaybackSession!.positionSeconds);
-    } else {
-      clearPlaybackSession();
-    }
-    setPlaybackRestored(true);
-  }, [featuredAlbums, initialPlaybackSession, playbackRestored]);
-
-  useEffect(() => {
-    if (!playbackRestored) return;
-    if (!playback) {
-      clearPlaybackSession();
-      return;
-    }
-
-    savePlaybackSession({
-      albumId: playback.album.id,
-      trackId: playback.track.id,
-      positionSeconds: playbackPosition,
-      volume: playbackVolume,
-    });
-  }, [playback, playbackPosition, playbackRestored, playbackVolume]);
-
-  useEffect(() => {
     const t = setTimeout(() => setHintGone(true), 6000);
     return () => clearTimeout(t);
   }, []);
@@ -151,9 +127,13 @@ export function MainPage() {
   }, []);
 
   const homeAlbums = useMemo(() => featuredAlbums ?? [], [featuredAlbums]);
+  const wallAlbums = useMemo(
+    () => shuffleAlbumsForWall(homeAlbums, layoutSeed),
+    [homeAlbums, layoutSeed],
+  );
   const albumsAt = useCallback(
-    (k: number, m: number) => (isHomeTile(k, m) ? homeAlbums : []),
-    [homeAlbums],
+    (k: number, m: number) => (isHomeTile(k, m) ? wallAlbums : []),
+    [wallAlbums],
   );
   const favoriteKeyFor = useCallback((album: Album) => databaseFavKey(album.id), []);
 

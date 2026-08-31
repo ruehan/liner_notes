@@ -339,30 +339,52 @@ describe("MainPage", () => {
     ).not.toBeInTheDocument();
   });
 
-  it("재생 대상과 볼륨을 새로고침 뒤에 복원한다", async () => {
-    const firstPage = render(<MainPage />);
+  it("이전 재생 기록이 있어도 새로고침한 첫 화면에서는 자동 재생하지 않는다", async () => {
     const album = DATABASE_ALBUMS[0];
-    await screen.findByLabelText(`${album.title} — ${album.artist}`);
-    fireEvent.click(firstCard(album.title, album.artist));
-
-    const dialog = await screen.findByRole("dialog");
-    fireEvent.click(within(dialog).getByRole("button", { name: "앨범 듣기" }));
-    await screen.findByTitle(`${album.tracks[0].title} YouTube 재생`);
-    fireEvent.change(screen.getByRole("slider", { name: "볼륨" }), {
-      target: { value: "38" },
-    });
-
-    await waitFor(() =>
-      expect(window.localStorage.getItem("liner-notes:playback-session")).toContain('"volume":38'),
-    );
-    firstPage.unmount();
+    window.localStorage.setItem("liner-notes:playback-session", JSON.stringify({
+      albumId: album.id,
+      trackId: album.tracks[0].id,
+      positionSeconds: 42,
+      volume: 38,
+    }));
 
     render(<MainPage />);
     await screen.findByLabelText(`${album.title} — ${album.artist}`);
+
     expect(
-      await screen.findByTitle(`${album.tracks[0].title} YouTube 재생`),
-    ).toHaveAttribute("data-video-id", "M7lc1UVf-VE");
-    expect(screen.getByRole("slider", { name: "볼륨" })).toHaveValue("38");
+      screen.queryByTitle(`${album.tracks[0].title} YouTube 재생`),
+    ).not.toBeInTheDocument();
+    expect(screen.queryByLabelText("미니 플레이어")).not.toBeInTheDocument();
+  });
+
+  it("새 접속마다 홈 벽의 앨범 위치를 새로 섞는다", async () => {
+    const random = vi.mocked(Math.random);
+    random.mockReset();
+    random.mockReturnValueOnce(0.1).mockReturnValue(0.5);
+    const firstPage = render(<MainPage />);
+    await screen.findByLabelText(`${DATABASE_ALBUMS[0].title} — ${DATABASE_ALBUMS[0].artist}`);
+    const firstPosition = firstCard(DATABASE_ALBUMS[0].title, DATABASE_ALBUMS[0].artist).getAttribute("style");
+    firstPage.unmount();
+
+    random.mockReset();
+    random.mockReturnValueOnce(0.9).mockReturnValue(0.5);
+    render(<MainPage />);
+    await screen.findByLabelText(`${DATABASE_ALBUMS[0].title} — ${DATABASE_ALBUMS[0].artist}`);
+    const nextPosition = firstCard(DATABASE_ALBUMS[0].title, DATABASE_ALBUMS[0].artist).getAttribute("style");
+
+    expect(nextPosition).not.toBe(firstPosition);
+  });
+
+  it("재생은 앨범 또는 곡을 직접 선택한 뒤에만 시작한다", async () => {
+    await renderLoadedPage();
+    const album = DATABASE_ALBUMS[0];
+    expect(screen.queryByLabelText("미니 플레이어")).not.toBeInTheDocument();
+
+    fireEvent.click(firstCard(album.title, album.artist));
+    const dialog = await screen.findByRole("dialog");
+    fireEvent.click(within(dialog).getByRole("button", { name: "앨범 듣기" }));
+
+    expect(await screen.findByTitle(`${album.tracks[0].title} YouTube 재생`)).toBeInTheDocument();
   });
 
   it("YouTube 임베드가 차단되면 원인을 안내한다", async () => {

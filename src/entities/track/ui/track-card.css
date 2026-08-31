@@ -248,35 +248,35 @@
   font-variant-numeric: tabular-nums;
 }
 
-/* 윤마치 — 상생관계: a warm paper margin with a moving red line. */
+/* 윤마치 — 상생관계: a lined field note beneath the untouched cover. */
 .track-card--sangsaeng {
   --sangsaeng-ink: #3c2828;
   --sangsaeng-red: #d84f58;
   --sangsaeng-paper: #fff5eb;
-  border-color: rgba(60, 40, 40, 0.22);
-  background: var(--sangsaeng-paper);
-}
-
-.track-card--sangsaeng .track-card__artwrap::after {
-  position: absolute;
-  inset: auto 0 0;
-  z-index: 1;
-  height: clamp(22px, 12%, 58px);
-  border-top: 1px dashed rgba(60, 40, 40, 0.28);
-  background:
-    linear-gradient(105deg, transparent 0 24%, rgba(216, 79, 88, 0.9) 24.4% 25.1%, transparent 25.5% 100%),
-    rgba(255, 245, 235, 0.66);
-  content: "";
 }
 
 .track-card--sangsaeng .track-card__head,
 .track-card--sangsaeng .track-card__foot {
   color: var(--sangsaeng-ink);
-  background: var(--sangsaeng-paper);
+  border-left: 6px solid var(--sangsaeng-red);
+  padding-left: 20px;
+  background:
+    linear-gradient(90deg, rgba(216, 79, 88, 0.13) 0 20px, transparent 20px),
+    var(--sangsaeng-paper);
 }
 
 .track-card--sangsaeng .track-card__head {
   border-color: rgba(60, 40, 40, 0.24);
+  border-left-color: var(--sangsaeng-red);
+  background:
+    linear-gradient(90deg, rgba(216, 79, 88, 0.13) 0 20px, transparent 20px),
+    repeating-linear-gradient(
+      to bottom,
+      var(--sangsaeng-paper) 0,
+      var(--sangsaeng-paper) 22px,
+      rgba(60, 40, 40, 0.1) 22px,
+      rgba(60, 40, 40, 0.1) 23px
+    );
 }
 
 .track-card--sangsaeng .track-card__title {
@@ -294,44 +294,28 @@
   color: #8a6262;
 }
 
-.track-card--sangsaeng .track-card__ordinal {
-  color: var(--sangsaeng-red);
-  background: var(--sangsaeng-paper);
-}
-
-/* 한로로 — 자몽살구클럽: a navy club pass framed by grapefruit and apricot. */
+/* 한로로 — 자몽살구클럽: a perforated club pass beneath the untouched cover. */
 .track-card--jamong {
   --jamong-night: #12182f;
   --jamong-grapefruit: #f16e6d;
   --jamong-apricot: #f7b45e;
   --jamong-paper: #fff3dc;
-  border-color: rgba(18, 24, 47, 0.48);
-  background: var(--jamong-night);
-}
-
-.track-card--jamong .track-card__artwrap {
-  background: var(--jamong-paper);
-}
-
-.track-card--jamong .track-card__artwrap::after {
-  position: absolute;
-  inset: 0;
-  z-index: 1;
-  background:
-    radial-gradient(circle at 9% 12%, rgba(247, 180, 94, 0.8) 0 4px, transparent 4.4px),
-    radial-gradient(circle at 16% 16%, rgba(241, 110, 109, 0.72) 0 8px, transparent 8.4px),
-    linear-gradient(to top, rgba(18, 24, 47, 0.48), transparent 22%);
-  content: "";
 }
 
 .track-card--jamong .track-card__head,
 .track-card--jamong .track-card__foot {
   color: var(--jamong-paper);
-  background: var(--jamong-night);
+  border-inline: 1px dashed rgba(255, 243, 220, 0.42);
+  background:
+    radial-gradient(circle at 18px 50%, rgba(247, 180, 94, 0.72) 0 2px, transparent 2.5px),
+    radial-gradient(circle at calc(100% - 18px) 50%, rgba(241, 110, 109, 0.72) 0 2px, transparent 2.5px),
+    var(--jamong-night);
 }
 
 .track-card--jamong .track-card__head {
   border-color: rgba(255, 243, 220, 0.28);
+  border-inline-color: rgba(255, 243, 220, 0.42);
+  box-shadow: inset 0 -1px 0 rgba(255, 243, 220, 0.18);
 }
 
 .track-card--jamong .track-card__title {
@@ -351,45 +335,37 @@
   color: var(--jamong-grapefruit);
 }
 
-.track-card--jamong .track-card__ordinal {
-  color: var(--jamong-night);
-  background: var(--jamong-apricot);
-}
-
-/* Tokai — shining.: an all-together encore in electric stage light. */
+/* Tokai — shining.: a neon wristband beneath the untouched cover. */
 .track-card--shining {
   --shining-night: #10182d;
   --shining-lime: #d6ff39;
   --shining-sky: #7fc8ff;
   --shining-paper: #f6f7ed;
-  border-color: rgba(214, 255, 57, 0.7);
-  background: var(--shining-night);
-}
-
-.track-card--shining .track-card__artwrap {
-  background: var(--shining-night);
-}
-
-.track-card--shining .track-card__artwrap::after {
-  position: absolute;
-  inset: 0;
-  z-index: 1;
-  background:
-    linear-gradient(124deg, transparent 0 43%, rgba(214, 255, 57, 0.42) 43.4% 44%, transparent 44.4% 100%),
-    radial-gradient(circle at 84% 15%, rgba(127, 200, 255, 0.78) 0 3px, transparent 3.5px),
-    radial-gradient(circle at 78% 24%, rgba(214, 255, 57, 0.84) 0 8px, transparent 8.5px),
-    linear-gradient(to top, rgba(16, 24, 45, 0.64), transparent 28%);
-  content: "";
 }
 
 .track-card--shining .track-card__head,
 .track-card--shining .track-card__foot {
   color: var(--shining-paper);
-  background: var(--shining-night);
+  border-inline: 2px solid var(--shining-lime);
+  background:
+    linear-gradient(108deg, rgba(214, 255, 57, 0.18) 0 34%, transparent 34% 100%),
+    var(--shining-night);
 }
 
 .track-card--shining .track-card__head {
   border-color: rgba(214, 255, 57, 0.34);
+  border-inline-color: var(--shining-lime);
+  box-shadow: inset 0 3px 0 var(--shining-lime);
+}
+
+.track-card--shining .track-card__foot {
+  background:
+    repeating-linear-gradient(
+      108deg,
+      rgba(127, 200, 255, 0.22) 0 2px,
+      transparent 2px 12px
+    ),
+    var(--shining-night);
 }
 
 .track-card--shining .track-card__title {
@@ -409,62 +385,38 @@
   color: var(--shining-sky);
 }
 
-.track-card--shining .track-card__ordinal {
-  color: var(--shining-night);
-  background: var(--shining-lime);
-}
-
-/* 유령서점 — 유령서점: an after-hours shelf with a borrowed bookmark. */
+/* 유령서점 — 유령서점: a book spine and library card beneath the untouched cover. */
 .track-card--ghost-bookstore {
   --ghost-night: #111a2b;
   --ghost-paper: #e8dfc7;
   --ghost-gold: #e9ae55;
   --ghost-blue: #86b7cb;
-  border-color: rgba(232, 223, 199, 0.5);
-  background: var(--ghost-night);
-}
-
-.track-card--ghost-bookstore .track-card__artwrap {
-  background: var(--ghost-night);
-}
-
-.track-card--ghost-bookstore .track-card__artwrap::after {
-  position: absolute;
-  inset: 0;
-  z-index: 1;
-  background:
-    linear-gradient(90deg, transparent 0 8%, rgba(232, 223, 199, 0.7) 8.3% 8.7%, transparent 9% 100%),
-    linear-gradient(90deg, transparent 0 20%, rgba(233, 174, 85, 0.68) 20.3% 20.8%, transparent 21.1% 100%),
-    linear-gradient(90deg, transparent 0 72%, rgba(134, 183, 203, 0.72) 72.3% 72.9%, transparent 73.2% 100%),
-    linear-gradient(to top, rgba(17, 26, 43, 0.72), transparent 32%);
-  content: "";
-}
-
-.track-card--ghost-bookstore .track-card__artwrap::before {
-  position: absolute;
-  top: 0;
-  right: clamp(14px, 12%, 48px);
-  z-index: 2;
-  width: clamp(16px, 12%, 42px);
-  height: 48%;
-  border-inline: 1px solid rgba(17, 26, 43, 0.55);
-  background: var(--ghost-gold);
-  clip-path: polygon(0 0, 100% 0, 100% 91%, 50% 100%, 0 91%);
-  content: "";
 }
 
 .track-card--ghost-bookstore .track-card__head,
 .track-card--ghost-bookstore .track-card__foot {
-  color: var(--ghost-paper);
-  background: var(--ghost-night);
+  color: var(--ghost-night);
+  border-left: 12px solid var(--ghost-gold);
+  padding-left: 20px;
+  background: var(--ghost-paper);
 }
 
 .track-card--ghost-bookstore .track-card__head {
-  border-color: rgba(232, 223, 199, 0.28);
+  border-top-color: rgba(17, 26, 43, 0.28);
+  border-left-color: var(--ghost-gold);
+  background:
+    linear-gradient(90deg, rgba(169, 93, 75, 0.18) 0 20px, transparent 20px),
+    repeating-linear-gradient(
+      to bottom,
+      var(--ghost-paper) 0,
+      var(--ghost-paper) 21px,
+      rgba(17, 26, 43, 0.09) 21px,
+      rgba(17, 26, 43, 0.09) 22px
+    );
 }
 
 .track-card--ghost-bookstore .track-card__title {
-  color: var(--ghost-gold);
+  color: var(--ghost-night);
   letter-spacing: -0.055em;
 }
 
@@ -472,17 +424,12 @@
 .track-card--ghost-bookstore .track-card__year,
 .track-card--ghost-bookstore .track-card__foot,
 .track-card--ghost-bookstore .track-card__len {
-  color: #aebdca;
+  color: #685d50;
 }
 
 .track-card--ghost-bookstore .track-card__artist:hover,
 .track-card--ghost-bookstore .track-card__artist:focus-visible {
   color: var(--ghost-blue);
-}
-
-.track-card--ghost-bookstore .track-card__ordinal {
-  color: var(--ghost-night);
-  background: var(--ghost-paper);
 }
 
 @media (max-width: 760px) {
