@@ -15,6 +15,16 @@ interface Props {
   onToggleFavorite: () => void;
 }
 
+function cardDesign(album: Album): "sangsaeng" | "jamong" | null {
+  if (album.title.trim() === "상생관계" && album.artist.trim() === "윤마치") {
+    return "sangsaeng";
+  }
+  if (album.title.trim() === "자몽살구클럽" && album.artist.trim() === "한로로") {
+    return "jamong";
+  }
+  return null;
+}
+
 export function AlbumCard({
   album,
   ordinal,
@@ -27,14 +37,21 @@ export function AlbumCard({
   onOpenArtist,
   onToggleFavorite,
 }: Props) {
+  const design = cardDesign(album);
+
   return (
     <article
-      className={["track-card", hot && "is-hot"]
+      className={[
+        "track-card",
+        design && `track-card--${design}`,
+        hot && "is-hot",
+      ]
         .filter(Boolean)
         .join(" ")}
       style={style}
       role="group"
       aria-label={`${album.title} — ${album.artist}`}
+      {...(design ? { "data-album-design": design } : {})}
       onClick={onOpen}
       onMouseEnter={onEnter}
       onMouseMove={(event) => {

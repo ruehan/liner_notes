@@ -101,6 +101,26 @@ describe("SubmissionSheet", () => {
     expect(artistSelect).toHaveValue("Second Artist");
   });
 
+  it("같은 아티스트, 앨범명, 발매 연도의 중복 등록을 막는다", async () => {
+    render(<SubmissionSheet open onClose={vi.fn()} onSubmitted={vi.fn()} />);
+
+    const artistSelect = await screen.findByLabelText(/아티스트/);
+    await waitFor(() => expect(artistSelect).toHaveTextContent("Artist"));
+    fireEvent.change(artistSelect, { target: { value: "Artist" } });
+    fireEvent.change(screen.getByLabelText(/앨범 제목/), {
+      target: { value: "Original album" },
+    });
+    fireEvent.change(screen.getByLabelText(/발매 연도/), { target: { value: "2024" } });
+    fireEvent.change(screen.getByLabelText(/곡 제목/), { target: { value: "A new track" } });
+    fireEvent.change(screen.getByLabelText(/길이/), { target: { value: "03:20" } });
+    fireEvent.click(screen.getByRole("button", { name: "앨범 등록" }));
+
+    expect(await screen.findByRole("alert")).toHaveTextContent(
+      "같은 아티스트·앨범명·발매 연도의 앨범이 이미 등록되어 있습니다.",
+    );
+    expect(api.submitCatalogAlbum).not.toHaveBeenCalled();
+  });
+
   it("아티스트를 등록하면 앨범 입력의 선택값으로 이어진다", async () => {
     api.fetchEditorArtists
       .mockReset()

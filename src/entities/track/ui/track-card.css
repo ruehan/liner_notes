@@ -72,9 +72,8 @@
 .track-card__artwrap {
   position: relative;
   z-index: 2;
-  height: 57%;
-  min-height: 136px;
-  flex: none;
+  min-height: 0;
+  flex: 1 1 0;
   pointer-events: none;
 }
 
@@ -226,7 +225,6 @@
 .track-card__foot {
   position: relative;
   z-index: 2;
-  margin-top: auto;
   display: flex;
   align-items: baseline;
   justify-content: space-between;
@@ -250,9 +248,117 @@
   font-variant-numeric: tabular-nums;
 }
 
+/* 윤마치 — 상생관계: a warm paper margin with a moving red line. */
+.track-card--sangsaeng {
+  --sangsaeng-ink: #3c2828;
+  --sangsaeng-red: #d84f58;
+  --sangsaeng-paper: #fff5eb;
+  border-color: rgba(60, 40, 40, 0.22);
+  background: var(--sangsaeng-paper);
+}
+
+.track-card--sangsaeng .track-card__artwrap::after {
+  position: absolute;
+  inset: auto 0 0;
+  z-index: 1;
+  height: clamp(22px, 12%, 58px);
+  border-top: 1px dashed rgba(60, 40, 40, 0.28);
+  background:
+    linear-gradient(105deg, transparent 0 24%, rgba(216, 79, 88, 0.9) 24.4% 25.1%, transparent 25.5% 100%),
+    rgba(255, 245, 235, 0.66);
+  content: "";
+}
+
+.track-card--sangsaeng .track-card__head,
+.track-card--sangsaeng .track-card__foot {
+  color: var(--sangsaeng-ink);
+  background: var(--sangsaeng-paper);
+}
+
+.track-card--sangsaeng .track-card__head {
+  border-color: rgba(60, 40, 40, 0.24);
+}
+
+.track-card--sangsaeng .track-card__title {
+  letter-spacing: -0.055em;
+}
+
+.track-card--sangsaeng .track-card__artist:hover,
+.track-card--sangsaeng .track-card__artist:focus-visible {
+  color: var(--sangsaeng-red);
+}
+
+.track-card--sangsaeng .track-card__year,
+.track-card--sangsaeng .track-card__foot,
+.track-card--sangsaeng .track-card__len {
+  color: #8a6262;
+}
+
+.track-card--sangsaeng .track-card__ordinal {
+  color: var(--sangsaeng-red);
+  background: var(--sangsaeng-paper);
+}
+
+/* 한로로 — 자몽살구클럽: a navy club pass framed by grapefruit and apricot. */
+.track-card--jamong {
+  --jamong-night: #12182f;
+  --jamong-grapefruit: #f16e6d;
+  --jamong-apricot: #f7b45e;
+  --jamong-paper: #fff3dc;
+  border-color: rgba(18, 24, 47, 0.48);
+  background: var(--jamong-night);
+}
+
+.track-card--jamong .track-card__artwrap {
+  background: var(--jamong-paper);
+}
+
+.track-card--jamong .track-card__artwrap::after {
+  position: absolute;
+  inset: 0;
+  z-index: 1;
+  background:
+    radial-gradient(circle at 9% 12%, rgba(247, 180, 94, 0.8) 0 4px, transparent 4.4px),
+    radial-gradient(circle at 16% 16%, rgba(241, 110, 109, 0.72) 0 8px, transparent 8.4px),
+    linear-gradient(to top, rgba(18, 24, 47, 0.48), transparent 22%);
+  content: "";
+}
+
+.track-card--jamong .track-card__head,
+.track-card--jamong .track-card__foot {
+  color: var(--jamong-paper);
+  background: var(--jamong-night);
+}
+
+.track-card--jamong .track-card__head {
+  border-color: rgba(255, 243, 220, 0.28);
+}
+
+.track-card--jamong .track-card__title {
+  color: var(--jamong-apricot);
+  letter-spacing: -0.055em;
+}
+
+.track-card--jamong .track-card__byline,
+.track-card--jamong .track-card__year,
+.track-card--jamong .track-card__foot,
+.track-card--jamong .track-card__len {
+  color: #c8cee8;
+}
+
+.track-card--jamong .track-card__artist:hover,
+.track-card--jamong .track-card__artist:focus-visible {
+  color: var(--jamong-grapefruit);
+}
+
+.track-card--jamong .track-card__ordinal {
+  color: var(--jamong-night);
+  background: var(--jamong-apricot);
+}
+
 @media (max-width: 760px) {
   .track-card__artwrap {
-    min-height: 116px;
+    min-height: 0;
   }
 
   .track-card__title {
@@ -262,8 +368,8 @@
 
 @container (max-height: 250px) {
   .track-card__artwrap {
-    height: 54%;
-    min-height: 106px;
+    min-height: 0;
+    flex: 1 1 0;
   }
 
   .track-card__ordinal {

@@ -34,6 +34,8 @@ interface Props {
 
 type TrackField = Exclude<keyof TrackDraft, "key">;
 type EditorDesk = "album" | "artist";
+const DUPLICATE_ALBUM_MESSAGE =
+  "같은 아티스트·앨범명·발매 연도의 앨범이 이미 등록되어 있습니다. 기존 앨범을 불러와 수정해 주세요.";
 
 function messageFrom(error: unknown): string {
   return error instanceof Error ? error.message : "등록 중 문제가 발생했습니다.";
@@ -42,6 +44,10 @@ function messageFrom(error: unknown): string {
 function durationInput(totalSeconds: number): string {
   const seconds = Math.max(0, Math.floor(totalSeconds));
   return `${Math.floor(seconds / 60)}:${String(seconds % 60).padStart(2, "0")}`;
+}
+
+function normalizedIdentity(value: string): string {
+  return value.trim().toLocaleLowerCase();
 }
 
 function draftFromEditorAlbum(album: EditorAlbum): AlbumDraft {
@@ -355,15 +361,29 @@ export function SubmissionSheet({ open, onClose, onSubmitted }: Props) {
       setNotice(null);
       return;
     }
+    const input = result.value;
+
+    const duplicate = editorAlbums.find(
+      (album) =>
+        album.id !== editingAlbumId &&
+        normalizedIdentity(album.artistName) === normalizedIdentity(input.artistName) &&
+        normalizedIdentity(album.title) === normalizedIdentity(input.title) &&
+        album.year === input.year,
+    );
+    if (duplicate) {
+      setFormErrors([DUPLICATE_ALBUM_MESSAGE]);
+      setNotice(null);
+      return;
+    }
 
     setSaving(true);
     setFormErrors([]);
     setNotice(null);
     try {
       if (editingAlbumId) {
-        await updateCatalogAlbum(editingAlbumId, result.value);
+        await updateCatalogAlbum(editingAlbumId, input);
       } else {
-        await submitCatalogAlbum(result.value);
+        await submitCatalogAlbum(input);
       }
       await onSubmitted();
       await loadEditorAlbums();

@@ -27,6 +27,14 @@ interface Props {
   onPlayTrack?: (track: Track) => void;
 }
 
+function isSangsaengGwangye(album: Album): boolean {
+  return album.title.trim() === "상생관계" && album.artist.trim() === "윤마치";
+}
+
+function isJamongSalguClub(album: Album): boolean {
+  return album.title.trim() === "자몽살구클럽" && album.artist.trim() === "한로로";
+}
+
 export function DetailSheet({
   entry,
   favorited = false,
@@ -65,6 +73,8 @@ export function DetailSheet({
 
   const { album } = shown;
   const theme = GENRES[album.genre];
+  const sangsaengGwangye = isSangsaengGwangye(album);
+  const jamongSalguClub = isJamongSalguClub(album);
   const firstPlayableTrack = album.tracks.find((track) =>
     normalizeYouTubeVideoId(track.youtubeVideoId),
   );
@@ -75,7 +85,9 @@ export function DetailSheet({
   };
 
   return (
-    <div className={`detail${open ? " is-open" : ""}`}>
+    <div
+      className={`detail${sangsaengGwangye ? " detail--sangsaeng" : ""}${jamongSalguClub ? " detail--jamong" : ""}${open ? " is-open" : ""}`}
+    >
       <div className="detail__scrim" onClick={onClose} />
       <div className="detail__ground">
         <button
@@ -100,9 +112,37 @@ export function DetailSheet({
           role="dialog"
           aria-modal="true"
           aria-label={`${album.title} 앨범 상세`}
+          {...(sangsaengGwangye
+            ? { "data-album-design": "sangsaeng" }
+            : jamongSalguClub
+              ? { "data-album-design": "jamong" }
+              : {})}
         >
           <div className="detail__body">
-            <h1 className="detail__title">{album.title}</h1>
+            {sangsaengGwangye && (
+              <p className="detail__sangsaeng-kicker">five small scenes, one moving heart</p>
+            )}
+            {jamongSalguClub && (
+              <p className="detail__jamong-kicker">a club for tomorrow</p>
+            )}
+            <h1
+              className={`detail__title${sangsaengGwangye ? " detail__title--sangsaeng" : ""}${jamongSalguClub ? " detail__title--jamong" : ""}`}
+            >
+              {sangsaengGwangye ? (
+                <>
+                  <span>상생</span>
+                  <span>관계</span>
+                </>
+              ) : jamongSalguClub ? (
+                <>
+                  <span>자몽</span>
+                  <span>살구</span>
+                  <span>클럽</span>
+                </>
+              ) : (
+                album.title
+              )}
+            </h1>
             <button
               type="button"
               className="detail__artist"
@@ -114,10 +154,34 @@ export function DetailSheet({
               {onOpenArtist && <span aria-hidden="true"> · 모든 앨범 보기</span>}
             </button>
             <p className="detail__phon">{theme.phon}</p>
-            <p className="detail__def">
-              <b>n.</b>
-              <span>{album.description}</span>
-            </p>
+            {sangsaengGwangye && (
+              <section className="detail__sangsaeng-note" aria-label="앨범의 중심 생각">
+                <p>
+                  나를 작아지게 했던 마음이, 끝내 다음 문장을 쓰게 하는 힘이 되기도 한다.
+                </p>
+                <ol aria-label="감정의 흐름">
+                  <li>비교</li>
+                  <li>머뭇거림</li>
+                  <li>다시 움직이기</li>
+                </ol>
+              </section>
+            )}
+            {jamongSalguClub && (
+              <section className="detail__jamong-note" aria-label="앨범의 중심 생각">
+                <p>오늘을 건너, 서로의 내일에 닿는 일.</p>
+                <ol aria-label="이야기의 흐름">
+                  <li>손 내밀기</li>
+                  <li>곁에 있기</li>
+                  <li>내일로 가기</li>
+                </ol>
+              </section>
+            )}
+            {album.description && (
+              <p className="detail__def">
+                <b>n.</b>
+                <span>{album.description}</span>
+              </p>
+            )}
             {album.tags.length > 0 && (
               <div className="detail__tags">
                 {album.tags.map((t, i) => (
@@ -235,6 +299,11 @@ export function DetailSheet({
           </div>
 
           <div className="detail__art">
+            {jamongSalguClub && (
+              <p className="detail__jamong-ticket" aria-hidden="true">
+                ticket / tomorrow
+              </p>
+            )}
             <div className="detail__frame detail__frame--back" aria-hidden="true">
               <CoverArt track={album.cover} imageUrl={album.coverUrl} />
             </div>

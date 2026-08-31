@@ -5,11 +5,12 @@ export interface WorldConfig {
   height: number;
 }
 
-export const CELL_SIZE = 236;
-export const CELL_GAP = 64;
+export const CELL_SIZE = 170;
+export const CELL_GAP = 46;
 export const MAX_ROTATION = 5;
 export const MOSAIC_BLEED = 2;
-export const MOSAIC_WORLD_WIDTH = 1320;
+// A compact repeating set shows roughly 30% smaller cards without breaking the 12-card grid.
+export const MOSAIC_WORLD_WIDTH = 920;
 export const MOSAIC_ROW_COUNT = 4;
 export const MOSAIC_ASPECTS = [
   1.6, 0.72, 1.24,

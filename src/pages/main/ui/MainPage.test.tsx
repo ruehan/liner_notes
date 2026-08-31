@@ -125,6 +125,71 @@ describe("MainPage", () => {
     );
   });
 
+  it("윤마치의 상생관계에는 조사 기반의 전용 상세 디자인을 적용한다", async () => {
+    const sangsaeng = {
+      ...DATABASE_ALBUMS[0],
+      title: "상생관계",
+      artist: "윤마치",
+      description: "",
+    };
+    featuredAlbumsMock.mockResolvedValue([sangsaeng]);
+
+    render(<MainPage />);
+    await screen.findByLabelText("상생관계 — 윤마치");
+    fireEvent.click(firstCard("상생관계", "윤마치"));
+
+    const dialog = await screen.findByRole("dialog");
+    expect(dialog).toHaveAttribute("data-album-design", "sangsaeng");
+    expect(dialog).toHaveTextContent("나를 작아지게 했던 마음이");
+    expect(dialog).toHaveTextContent("비교");
+    expect(dialog).toHaveTextContent("다시 움직이기");
+  });
+
+  it("한로로의 자몽살구클럽에는 조사 기반의 전용 상세 디자인을 적용한다", async () => {
+    const jamong = {
+      ...DATABASE_ALBUMS[1],
+      title: "자몽살구클럽",
+      artist: "한로로",
+      description: "",
+    };
+    featuredAlbumsMock.mockResolvedValue([jamong]);
+
+    render(<MainPage />);
+    await screen.findByLabelText("자몽살구클럽 — 한로로");
+    fireEvent.click(firstCard("자몽살구클럽", "한로로"));
+
+    const dialog = await screen.findByRole("dialog");
+    expect(dialog).toHaveAttribute("data-album-design", "jamong");
+    expect(dialog).toHaveTextContent("오늘을 건너");
+    expect(dialog).toHaveTextContent("손 내밀기");
+    expect(dialog).toHaveTextContent("내일로 가기");
+  });
+
+  it("전용 앨범은 홈 카드에서도 각자 다른 시각 언어를 사용한다", async () => {
+    const sangsaeng = {
+      ...DATABASE_ALBUMS[0],
+      title: "상생관계",
+      artist: "윤마치",
+    };
+    const jamong = {
+      ...DATABASE_ALBUMS[1],
+      title: "자몽살구클럽",
+      artist: "한로로",
+    };
+    featuredAlbumsMock.mockResolvedValue([sangsaeng, jamong]);
+
+    render(<MainPage />);
+
+    expect(await screen.findByLabelText("상생관계 — 윤마치")).toHaveAttribute(
+      "data-album-design",
+      "sangsaeng",
+    );
+    expect(await screen.findByLabelText("자몽살구클럽 — 한로로")).toHaveAttribute(
+      "data-album-design",
+      "jamong",
+    );
+  });
+
   it("모달을 닫아도 YouTube 재생은 미니 플레이어에서 계속된다", async () => {
     await renderLoadedPage();
     const album = DATABASE_ALBUMS[0];

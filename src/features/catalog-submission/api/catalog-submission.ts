@@ -41,6 +41,12 @@ const COVER_TYPES = new Map([
   ["image/webp", "webp"],
 ]);
 const MAX_COVER_SIZE = 5 * 1024 * 1024;
+const DUPLICATE_ALBUM_MESSAGE =
+  "같은 아티스트·앨범명·발매 연도의 앨범이 이미 등록되어 있습니다. 기존 앨범을 불러와 수정해 주세요.";
+
+function albumMutationError(error: { code?: string; message: string }): Error {
+  return error.code === "23505" ? new Error(DUPLICATE_ALBUM_MESSAGE) : new Error(error.message);
+}
 
 export function validateCoverFile(file: File): string | null {
   if (!COVER_TYPES.has(file.type)) {
@@ -139,7 +145,7 @@ export async function submitCatalogAlbum(input: CatalogAlbumInput): Promise<stri
     p_sort_order: input.sortOrder,
     p_tracks: input.tracks,
   });
-  if (error) throw new Error(error.message);
+  if (error) throw albumMutationError(error);
   return data as string;
 }
 
@@ -161,7 +167,7 @@ export async function updateCatalogAlbum(
     p_sort_order: input.sortOrder,
     p_tracks: input.tracks,
   });
-  if (error) throw new Error(error.message);
+  if (error) throw albumMutationError(error);
   return data as string;
 }
 

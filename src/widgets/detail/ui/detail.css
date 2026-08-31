@@ -449,6 +449,521 @@
   filter: saturate(0.8);
 }
 
+/* 윤마치 — 상생관계: comparison and momentum arranged like a field note. */
+.detail--sangsaeng {
+  --sangsaeng-ink: #3c2828;
+  --sangsaeng-red: #d84f58;
+  --sangsaeng-pink: #f0b7bc;
+  --sangsaeng-paper: #fff5eb;
+  --sangsaeng-muted: #8a6262;
+}
+
+.detail--sangsaeng .detail__ground {
+  background-color: var(--sangsaeng-pink);
+  background-image:
+    radial-gradient(circle at 83% 17%, rgba(255, 250, 238, 0.9) 0 7%, transparent 7.3%),
+    radial-gradient(circle at 12% 84%, rgba(216, 79, 88, 0.19) 0 14%, transparent 14.3%),
+    linear-gradient(118deg, rgba(255, 245, 235, 0.45) 0 26%, transparent 26% 100%),
+    repeating-linear-gradient(
+      to bottom,
+      transparent 0,
+      transparent 31px,
+      rgba(88, 45, 47, 0.08) 31px,
+      rgba(88, 45, 47, 0.08) 32px
+    );
+  color: var(--sangsaeng-ink);
+}
+
+.detail--sangsaeng .detail__ground::before {
+  position: absolute;
+  inset: 12% 8% auto auto;
+  width: clamp(120px, 16vw, 250px);
+  aspect-ratio: 1;
+  border: 1px solid rgba(60, 40, 40, 0.2);
+  border-radius: 50%;
+  box-shadow: inset 0 0 0 clamp(14px, 2vw, 30px) rgba(255, 245, 235, 0.26);
+  content: "";
+  pointer-events: none;
+}
+
+.detail--sangsaeng .detail__close {
+  border-color: var(--sangsaeng-ink);
+  color: var(--sangsaeng-ink);
+  background: var(--sangsaeng-paper);
+}
+
+.detail--sangsaeng .detail__close:hover {
+  color: var(--sangsaeng-paper);
+  background: var(--sangsaeng-ink);
+}
+
+.detail--sangsaeng .detail__card {
+  grid-template-columns: minmax(0, 43ch) minmax(300px, 1fr);
+  column-gap: clamp(38px, 7vw, 142px);
+}
+
+.detail--sangsaeng .detail__body {
+  position: relative;
+  max-height: calc(100vh - 14vh);
+  color: var(--sangsaeng-ink);
+}
+
+.detail__sangsaeng-kicker {
+  margin: 0 0 clamp(10px, 1.4vw, 18px);
+  color: var(--sangsaeng-red);
+  font-family: var(--mono);
+  font-size: var(--t-micro);
+  font-weight: 700;
+  letter-spacing: var(--tr-wider);
+  text-transform: uppercase;
+}
+
+.detail__title--sangsaeng {
+  display: grid;
+  max-width: 6ch;
+  color: var(--sangsaeng-ink);
+  font-size: clamp(58px, 6vw, 112px);
+  font-weight: 700;
+  letter-spacing: -0.11em;
+  line-height: 0.82;
+}
+
+.detail__title--sangsaeng span:last-child {
+  padding-left: 0.8ch;
+  color: var(--sangsaeng-red);
+}
+
+.detail--sangsaeng .detail__artist {
+  margin-top: clamp(20px, 2.5vw, 34px);
+  color: var(--sangsaeng-ink);
+}
+
+.detail--sangsaeng .detail__artist:not(:disabled):hover,
+.detail--sangsaeng .detail__artist:focus-visible {
+  color: var(--sangsaeng-red);
+}
+
+.detail--sangsaeng .detail__phon {
+  display: none;
+}
+
+.detail__sangsaeng-note {
+  margin-top: clamp(18px, 2.2vw, 30px);
+  padding: clamp(16px, 2vw, 26px);
+  border: 1px solid rgba(60, 40, 40, 0.32);
+  border-radius: 0 16px 16px 16px;
+  background: rgba(255, 245, 235, 0.64);
+  box-shadow: 8px 8px 0 rgba(216, 79, 88, 0.2);
+}
+
+.detail__sangsaeng-note > p {
+  max-width: 28ch;
+  margin: 0;
+  font-family: var(--display);
+  font-size: var(--t-lead);
+  font-weight: 600;
+  letter-spacing: -0.025em;
+  line-height: 1.52;
+}
+
+.detail__sangsaeng-note ol {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 7px;
+  margin: 16px 0 0;
+  padding: 0;
+  list-style: none;
+}
+
+.detail__sangsaeng-note li {
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  color: var(--sangsaeng-muted);
+  font-family: var(--mono);
+  font-size: var(--t-micro);
+  font-weight: 700;
+  letter-spacing: 0.05em;
+}
+
+.detail__sangsaeng-note li:not(:last-child)::after {
+  color: var(--sangsaeng-red);
+  content: "→";
+}
+
+.detail--sangsaeng .detail__def {
+  color: var(--sangsaeng-ink);
+}
+
+.detail--sangsaeng .detail__def b,
+.detail--sangsaeng .detail__meta dt,
+.detail--sangsaeng .detail__tracklist-head,
+.detail--sangsaeng .detail__track-no,
+.detail--sangsaeng .detail__track-length {
+  color: var(--sangsaeng-red);
+}
+
+.detail--sangsaeng .detail__meta,
+.detail--sangsaeng .detail__tracklist,
+.detail--sangsaeng .detail__nav {
+  border-color: rgba(60, 40, 40, 0.22);
+}
+
+.detail--sangsaeng .detail__meta dd,
+.detail--sangsaeng .detail__nav button {
+  color: var(--sangsaeng-ink);
+}
+
+.detail--sangsaeng .detail__track {
+  color: var(--sangsaeng-muted);
+}
+
+.detail--sangsaeng .detail__track:not(:disabled):hover,
+.detail--sangsaeng .detail__tracks li.is-playing .detail__track {
+  color: var(--sangsaeng-ink);
+  background: rgba(255, 245, 235, 0.7);
+}
+
+.detail--sangsaeng .detail__play {
+  color: var(--sangsaeng-paper);
+  background: var(--sangsaeng-ink);
+}
+
+.detail--sangsaeng .detail__play:hover {
+  background: var(--sangsaeng-red);
+}
+
+.detail--sangsaeng .detail__fav {
+  border-color: var(--sangsaeng-ink);
+  color: var(--sangsaeng-ink);
+}
+
+.detail--sangsaeng .detail__fav.is-on {
+  border-color: var(--sangsaeng-red);
+  color: var(--sangsaeng-red);
+}
+
+.detail--sangsaeng .detail__nav button:hover:enabled {
+  color: var(--sangsaeng-red);
+}
+
+.detail--sangsaeng .detail__art {
+  height: min(64vh, 620px);
+}
+
+.detail--sangsaeng .detail__frame {
+  width: min(52vh, 472px);
+  padding: clamp(9px, 1vw, 14px);
+  border: 1px solid rgba(60, 40, 40, 0.2);
+  border-radius: 2px;
+  background: var(--sangsaeng-paper);
+  box-shadow: 16px 18px 0 rgba(216, 79, 88, 0.24), 0 30px 50px -28px rgba(60, 40, 40, 0.72);
+  transform: rotate(-2.4deg);
+}
+
+.detail--sangsaeng .detail__frame::after {
+  position: absolute;
+  right: clamp(12px, 1.5vw, 22px);
+  bottom: clamp(12px, 1.5vw, 22px);
+  width: clamp(18px, 2vw, 30px);
+  aspect-ratio: 1;
+  border: 2px solid var(--sangsaeng-paper);
+  border-radius: 50%;
+  background: var(--sangsaeng-red);
+  box-shadow: 0 0 0 5px rgba(216, 79, 88, 0.18);
+  content: "";
+}
+
+.detail--sangsaeng .detail__frame--back {
+  opacity: 0.35;
+  transform: rotate(4.5deg) translate(28px, 22px);
+}
+
+/* 한로로 — 자몽살구클럽: a night-club pass for finding tomorrow together. */
+.detail--jamong {
+  --jamong-night: #12182f;
+  --jamong-plum: #312046;
+  --jamong-grapefruit: #f16e6d;
+  --jamong-apricot: #f7b45e;
+  --jamong-paper: #fff3dc;
+  --jamong-mist: #c8cee8;
+}
+
+.detail--jamong .detail__ground {
+  overflow: hidden;
+  background-color: var(--jamong-night);
+  background-image:
+    radial-gradient(circle at 79% 18%, rgba(247, 180, 94, 0.9) 0 4%, transparent 4.25%),
+    radial-gradient(circle at 86% 24%, rgba(241, 110, 109, 0.83) 0 8%, transparent 8.3%),
+    radial-gradient(circle at 13% 79%, rgba(241, 110, 109, 0.33) 0 12%, transparent 12.3%),
+    linear-gradient(124deg, var(--jamong-plum) 0 28%, transparent 28% 100%),
+    repeating-linear-gradient(
+      to bottom,
+      transparent 0,
+      transparent 31px,
+      rgba(255, 243, 220, 0.07) 31px,
+      rgba(255, 243, 220, 0.07) 32px
+    );
+  color: var(--jamong-paper);
+}
+
+.detail--jamong .detail__ground::before,
+.detail--jamong .detail__ground::after {
+  position: absolute;
+  border: 1px solid rgba(200, 206, 232, 0.42);
+  border-radius: 50%;
+  content: "";
+  pointer-events: none;
+}
+
+.detail--jamong .detail__ground::before {
+  top: 14%;
+  right: 10%;
+  width: clamp(126px, 17vw, 262px);
+  aspect-ratio: 1;
+  box-shadow:
+    inset 0 0 0 clamp(15px, 2vw, 29px) rgba(18, 24, 47, 0.25),
+    0 0 0 clamp(15px, 2vw, 29px) rgba(247, 180, 94, 0.14);
+}
+
+.detail--jamong .detail__ground::after {
+  top: 20%;
+  right: clamp(110px, 19vw, 330px);
+  width: clamp(68px, 8vw, 124px);
+  aspect-ratio: 1;
+  background: rgba(241, 110, 109, 0.12);
+}
+
+.detail--jamong .detail__close {
+  border-color: var(--jamong-paper);
+  color: var(--jamong-paper);
+  background: rgba(18, 24, 47, 0.76);
+  backdrop-filter: blur(8px);
+}
+
+.detail--jamong .detail__close:hover {
+  color: var(--jamong-night);
+  background: var(--jamong-apricot);
+}
+
+.detail--jamong .detail__card {
+  grid-template-columns: minmax(280px, 0.83fr) minmax(0, 44ch);
+  column-gap: clamp(38px, 8vw, 148px);
+}
+
+.detail--jamong .detail__body {
+  position: relative;
+  z-index: 1;
+  max-height: calc(100vh - 14vh);
+  color: var(--jamong-paper);
+}
+
+.detail__jamong-kicker {
+  margin: 0 0 clamp(10px, 1.4vw, 18px);
+  color: var(--jamong-apricot);
+  font-family: var(--mono);
+  font-size: var(--t-micro);
+  font-weight: 700;
+  letter-spacing: var(--tr-wider);
+  text-transform: uppercase;
+}
+
+.detail__title--jamong {
+  display: flex;
+  flex-direction: column;
+  color: var(--jamong-paper);
+  font-size: clamp(56px, 5.8vw, 104px);
+  font-weight: 700;
+  letter-spacing: -0.1em;
+  line-height: 0.77;
+}
+
+.detail__title--jamong span:nth-child(1) {
+  color: var(--jamong-grapefruit);
+}
+
+.detail__title--jamong span:nth-child(2) {
+  padding-left: 0.68ch;
+  color: var(--jamong-apricot);
+}
+
+.detail__title--jamong span:nth-child(3) {
+  padding-left: 0.15ch;
+}
+
+.detail--jamong .detail__artist {
+  margin-top: clamp(22px, 2.8vw, 38px);
+  color: var(--jamong-paper);
+}
+
+.detail--jamong .detail__artist:not(:disabled):hover,
+.detail--jamong .detail__artist:focus-visible {
+  color: var(--jamong-apricot);
+}
+
+.detail--jamong .detail__phon {
+  display: none;
+}
+
+.detail__jamong-note {
+  position: relative;
+  margin-top: clamp(18px, 2.2vw, 30px);
+  padding: clamp(16px, 2vw, 26px);
+  overflow: hidden;
+  border: 1px dashed rgba(255, 243, 220, 0.64);
+  background:
+    linear-gradient(90deg, rgba(255, 243, 220, 0.07) 50%, transparent 50%) 0 100% / 10px 1px repeat-x,
+    rgba(49, 32, 70, 0.68);
+  box-shadow: 9px 9px 0 rgba(241, 110, 109, 0.2);
+}
+
+.detail__jamong-note::after {
+  position: absolute;
+  top: -44px;
+  right: -34px;
+  width: 94px;
+  aspect-ratio: 1;
+  border: 1px solid rgba(247, 180, 94, 0.52);
+  border-radius: 50%;
+  box-shadow: -18px 19px 0 rgba(241, 110, 109, 0.24);
+  content: "";
+}
+
+.detail__jamong-note > p {
+  position: relative;
+  z-index: 1;
+  max-width: 25ch;
+  margin: 0;
+  font-family: var(--display);
+  font-size: var(--t-lead);
+  font-weight: 600;
+  letter-spacing: -0.025em;
+  line-height: 1.52;
+}
+
+.detail__jamong-note ol {
+  position: relative;
+  z-index: 1;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 7px;
+  margin: 16px 0 0;
+  padding: 0;
+  list-style: none;
+}
+
+.detail__jamong-note li {
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  color: var(--jamong-mist);
+  font-family: var(--mono);
+  font-size: var(--t-micro);
+  font-weight: 700;
+  letter-spacing: 0.05em;
+}
+
+.detail__jamong-note li:not(:last-child)::after {
+  color: var(--jamong-apricot);
+  content: "✦";
+}
+
+.detail--jamong .detail__def {
+  color: var(--jamong-paper);
+}
+
+.detail--jamong .detail__def b,
+.detail--jamong .detail__meta dt,
+.detail--jamong .detail__tracklist-head,
+.detail--jamong .detail__track-no,
+.detail--jamong .detail__track-length {
+  color: var(--jamong-apricot);
+}
+
+.detail--jamong .detail__meta,
+.detail--jamong .detail__tracklist,
+.detail--jamong .detail__nav {
+  border-color: rgba(255, 243, 220, 0.28);
+}
+
+.detail--jamong .detail__meta dd,
+.detail--jamong .detail__nav button {
+  color: var(--jamong-paper);
+}
+
+.detail--jamong .detail__track {
+  color: var(--jamong-mist);
+}
+
+.detail--jamong .detail__track:not(:disabled):hover,
+.detail--jamong .detail__tracks li.is-playing .detail__track {
+  color: var(--jamong-paper);
+  background: rgba(255, 243, 220, 0.12);
+}
+
+.detail--jamong .detail__play {
+  color: var(--jamong-night);
+  background: var(--jamong-apricot);
+}
+
+.detail--jamong .detail__play:hover {
+  color: var(--jamong-paper);
+  background: var(--jamong-grapefruit);
+}
+
+.detail--jamong .detail__fav {
+  border-color: var(--jamong-paper);
+  color: var(--jamong-paper);
+}
+
+.detail--jamong .detail__fav.is-on {
+  border-color: var(--jamong-grapefruit);
+  color: var(--jamong-grapefruit);
+}
+
+.detail--jamong .detail__nav button:hover:enabled {
+  color: var(--jamong-apricot);
+}
+
+.detail--jamong .detail__art {
+  order: -1;
+  height: min(64vh, 620px);
+}
+
+.detail--jamong .detail__frame {
+  width: min(51vh, 466px);
+  padding: clamp(9px, 1vw, 14px);
+  border: 1px solid rgba(255, 243, 220, 0.48);
+  border-radius: 18px 3px 18px 3px;
+  background: var(--jamong-paper);
+  box-shadow: 17px 19px 0 rgba(241, 110, 109, 0.24), 0 28px 60px -30px #060914;
+  transform: rotate(2.3deg);
+}
+
+.detail--jamong .detail__frame--back {
+  opacity: 0.3;
+  transform: rotate(-4.8deg) translate(-26px, 20px);
+}
+
+.detail__jamong-ticket {
+  position: absolute;
+  z-index: 3;
+  right: clamp(-20px, -1vw, -8px);
+  bottom: clamp(4px, 6vh, 52px);
+  margin: 0;
+  padding: 7px 12px 8px;
+  border: 1px dashed var(--jamong-night);
+  color: var(--jamong-night);
+  background: var(--jamong-apricot);
+  box-shadow: 5px 5px 0 rgba(18, 24, 47, 0.42);
+  font-family: var(--mono);
+  font-size: var(--t-micro);
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  transform: rotate(-7deg);
+}
+
 @media (max-width: 760px) {
   .detail__card {
     grid-template-columns: 1fr;
@@ -457,6 +972,70 @@
     padding: 16vh 8vw 40px;
     overflow-y: auto;
     touch-action: pan-y;
+  }
+
+  .detail--sangsaeng .detail__ground::before {
+    top: 9%;
+    right: 8%;
+    width: min(34vw, 180px);
+  }
+
+  .detail--sangsaeng .detail__card {
+    row-gap: 34px;
+  }
+
+  .detail--sangsaeng .detail__body {
+    max-height: none;
+  }
+
+  .detail__title--sangsaeng {
+    font-size: clamp(54px, 15vw, 86px);
+  }
+
+  .detail--sangsaeng .detail__art {
+    height: auto;
+  }
+
+  .detail--sangsaeng .detail__frame {
+    width: min(68vw, 330px);
+  }
+
+  .detail--jamong .detail__ground::before {
+    top: 9%;
+    right: 7%;
+    width: min(32vw, 178px);
+  }
+
+  .detail--jamong .detail__ground::after {
+    top: 16%;
+    right: 26%;
+    width: min(17vw, 88px);
+  }
+
+  .detail--jamong .detail__card {
+    row-gap: 34px;
+  }
+
+  .detail--jamong .detail__body {
+    max-height: none;
+  }
+
+  .detail__title--jamong {
+    font-size: clamp(52px, 14.5vw, 82px);
+  }
+
+  .detail--jamong .detail__art {
+    order: 0;
+    height: auto;
+  }
+
+  .detail--jamong .detail__frame {
+    width: min(68vw, 330px);
+  }
+
+  .detail__jamong-ticket {
+    right: -8px;
+    bottom: -8px;
   }
 
   .detail__art {
