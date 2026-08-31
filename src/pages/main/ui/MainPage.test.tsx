@@ -125,6 +125,66 @@ describe("MainPage", () => {
     );
   });
 
+  it("수록곡을 누르면 재생과 함께 곡 메모를 펼치고 다시 누르면 닫는다", async () => {
+    const memo = "곡을 들은 뒤 남겨 둔 개인적인 감상 메모입니다.";
+    const album = {
+      ...DATABASE_ALBUMS[0],
+      tracks: DATABASE_ALBUMS[0].tracks.map((track, index) =>
+        index === 0 ? { ...track, definition: memo } : track,
+      ),
+    };
+    featuredAlbumsMock.mockResolvedValue([album]);
+
+    render(<MainPage />);
+    await screen.findByLabelText(`${album.title} — ${album.artist}`);
+    fireEvent.click(firstCard(album.title, album.artist));
+
+    const dialog = await screen.findByRole("dialog");
+    const trackButton = within(dialog).getByRole("button", {
+      name: `${album.tracks[0].title} 재생 및 곡 메모 열기`,
+    });
+    fireEvent.click(trackButton);
+
+    expect(trackButton).toHaveAttribute("aria-expanded", "true");
+    expect(within(dialog).getByText(memo)).toBeInTheDocument();
+    expect(await screen.findByTitle(`${album.tracks[0].title} YouTube 재생`)).toBeInTheDocument();
+
+    fireEvent.click(
+      within(dialog).getByRole("button", {
+        name: `${album.tracks[0].title} 재생 및 곡 메모 닫기`,
+      }),
+    );
+    expect(within(dialog).queryByText(memo)).not.toBeInTheDocument();
+  });
+
+  it("YouTube 정보가 없는 수록곡도 곡 메모는 열어볼 수 있다", async () => {
+    const memo = "재생 정보 없이도 읽을 수 있는 곡 메모입니다.";
+    const album = {
+      ...DATABASE_ALBUMS[0],
+      tracks: DATABASE_ALBUMS[0].tracks.map((track, index) =>
+        index === 0
+          ? { ...track, definition: memo, youtubeVideoId: undefined }
+          : track,
+      ),
+    };
+    featuredAlbumsMock.mockResolvedValue([album]);
+
+    render(<MainPage />);
+    await screen.findByLabelText(`${album.title} — ${album.artist}`);
+    fireEvent.click(firstCard(album.title, album.artist));
+
+    const dialog = await screen.findByRole("dialog");
+    const trackButton = within(dialog).getByRole("button", {
+      name: `${album.tracks[0].title} 곡 메모 열기`,
+    });
+    expect(trackButton).toBeEnabled();
+    fireEvent.click(trackButton);
+
+    expect(trackButton).toHaveAttribute("aria-expanded", "true");
+    expect(within(dialog).getByText(memo)).toBeInTheDocument();
+    expect(screen.queryByLabelText("미니 플레이어")).not.toBeInTheDocument();
+  });
+
   it("윤마치의 상생관계에는 조사 기반의 전용 상세 디자인을 적용한다", async () => {
     const sangsaeng = {
       ...DATABASE_ALBUMS[0],
@@ -165,6 +225,46 @@ describe("MainPage", () => {
     expect(dialog).toHaveTextContent("내일로 가기");
   });
 
+  it("Tokai의 shining.에는 조사 기반의 전용 상세 디자인을 적용한다", async () => {
+    const shining = {
+      ...DATABASE_ALBUMS[2],
+      title: "shining.",
+      artist: "Tokai",
+      description: "",
+    };
+    featuredAlbumsMock.mockResolvedValue([shining]);
+
+    render(<MainPage />);
+    await screen.findByLabelText("shining. — Tokai");
+    fireEvent.click(firstCard("shining.", "Tokai"));
+
+    const dialog = await screen.findByRole("dialog");
+    expect(dialog).toHaveAttribute("data-album-design", "shining");
+    expect(dialog).toHaveTextContent("한 번 더, 함께 빛나기");
+    expect(dialog).toHaveTextContent("타오르기");
+    expect(dialog).toHaveTextContent("함께 빛나기");
+  });
+
+  it("유령서점의 유령서점에는 조사 기반의 전용 상세 디자인을 적용한다", async () => {
+    const ghostBookstore = {
+      ...DATABASE_ALBUMS[3],
+      title: "유령서점",
+      artist: "유령서점",
+      description: "",
+    };
+    featuredAlbumsMock.mockResolvedValue([ghostBookstore]);
+
+    render(<MainPage />);
+    await screen.findByLabelText("유령서점 — 유령서점");
+    fireEvent.click(firstCard("유령서점", "유령서점"));
+
+    const dialog = await screen.findByRole("dialog");
+    expect(dialog).toHaveAttribute("data-album-design", "ghost-bookstore");
+    expect(dialog).toHaveTextContent("잊힌 문장을 찾듯");
+    expect(dialog).toHaveTextContent("불빛");
+    expect(dialog).toHaveTextContent("항해");
+  });
+
   it("전용 앨범은 홈 카드에서도 각자 다른 시각 언어를 사용한다", async () => {
     const sangsaeng = {
       ...DATABASE_ALBUMS[0],
@@ -176,7 +276,17 @@ describe("MainPage", () => {
       title: "자몽살구클럽",
       artist: "한로로",
     };
-    featuredAlbumsMock.mockResolvedValue([sangsaeng, jamong]);
+    const shining = {
+      ...DATABASE_ALBUMS[2],
+      title: "shining.",
+      artist: "Tokai",
+    };
+    const ghostBookstore = {
+      ...DATABASE_ALBUMS[3],
+      title: "유령서점",
+      artist: "유령서점",
+    };
+    featuredAlbumsMock.mockResolvedValue([sangsaeng, jamong, shining, ghostBookstore]);
 
     render(<MainPage />);
 
@@ -187,6 +297,14 @@ describe("MainPage", () => {
     expect(await screen.findByLabelText("자몽살구클럽 — 한로로")).toHaveAttribute(
       "data-album-design",
       "jamong",
+    );
+    expect(await screen.findByLabelText("shining. — Tokai")).toHaveAttribute(
+      "data-album-design",
+      "shining",
+    );
+    expect(await screen.findByLabelText("유령서점 — 유령서점")).toHaveAttribute(
+      "data-album-design",
+      "ghost-bookstore",
     );
   });
 

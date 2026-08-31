@@ -28,7 +28,11 @@ vi.mock("react-youtube", () => ({
 }));
 
 const album = generateTileAlbums(0, 0, 789)[0];
-const track = { ...album.tracks[0], youtubeVideoId: "M7lc1UVf-VE" };
+const track = {
+  ...album.tracks[0],
+  definition: "현재 재생 중인 곡에 남긴 감상 메모입니다.",
+  youtubeVideoId: "M7lc1UVf-VE",
+};
 const item: PlaybackItem = {
   album: { ...album, tracks: [track, ...album.tracks.slice(1)] },
   track,
@@ -52,6 +56,8 @@ describe("PlayerDock", () => {
         onProgress={onProgress}
       />,
     );
+
+    expect(screen.getByLabelText("현재 곡 메모")).toHaveTextContent(track.definition);
 
     const readyButton = document.querySelector('[aria-label="YouTube 준비"]');
     expect(readyButton).toBeInstanceOf(HTMLButtonElement);

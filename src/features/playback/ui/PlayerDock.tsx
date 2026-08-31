@@ -206,6 +206,12 @@ export function PlayerDock({
       <button type="button" className="player-dock__close" onClick={onClose} aria-label="재생 종료">
         ×
       </button>
+      {item.track.definition.trim() && (
+        <p className="player-dock__note" aria-label="현재 곡 메모">
+          <span>track note</span>
+          {item.track.definition}
+        </p>
+      )}
       {error && <p className="player-dock__error" role="alert">{error}</p>}
     </aside>
   );

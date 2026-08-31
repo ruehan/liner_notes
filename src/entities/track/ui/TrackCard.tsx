@@ -15,12 +15,18 @@ interface Props {
   onToggleFavorite: () => void;
 }
 
-function cardDesign(album: Album): "sangsaeng" | "jamong" | null {
+function cardDesign(album: Album): "sangsaeng" | "jamong" | "shining" | "ghost-bookstore" | null {
   if (album.title.trim() === "상생관계" && album.artist.trim() === "윤마치") {
     return "sangsaeng";
   }
   if (album.title.trim() === "자몽살구클럽" && album.artist.trim() === "한로로") {
     return "jamong";
+  }
+  if (album.title.trim() === "shining." && album.artist.trim() === "Tokai") {
+    return "shining";
+  }
+  if (album.title.trim() === "유령서점" && album.artist.trim() === "유령서점") {
+    return "ghost-bookstore";
   }
   return null;
 }

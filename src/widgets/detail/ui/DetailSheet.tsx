@@ -35,6 +35,14 @@ function isJamongSalguClub(album: Album): boolean {
   return album.title.trim() === "자몽살구클럽" && album.artist.trim() === "한로로";
 }
 
+function isShining(album: Album): boolean {
+  return album.title.trim() === "shining." && album.artist.trim() === "Tokai";
+}
+
+function isGhostBookstore(album: Album): boolean {
+  return album.title.trim() === "유령서점" && album.artist.trim() === "유령서점";
+}
+
 export function DetailSheet({
   entry,
   favorited = false,
@@ -49,12 +57,14 @@ export function DetailSheet({
 }: Props) {
   const [shown, setShown] = useState<OpenEntry | null>(null);
   const [open, setOpen] = useState(false);
+  const [expandedTrackId, setExpandedTrackId] = useState<string | null>(null);
   const closing = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   useEffect(() => {
     if (entry) {
       if (closing.current) clearTimeout(closing.current);
       setShown(entry);
+      setExpandedTrackId(null);
       const raf = requestAnimationFrame(() =>
         requestAnimationFrame(() => setOpen(true)),
       );
@@ -75,6 +85,8 @@ export function DetailSheet({
   const theme = GENRES[album.genre];
   const sangsaengGwangye = isSangsaengGwangye(album);
   const jamongSalguClub = isJamongSalguClub(album);
+  const shining = isShining(album);
+  const ghostBookstore = isGhostBookstore(album);
   const firstPlayableTrack = album.tracks.find((track) =>
     normalizeYouTubeVideoId(track.youtubeVideoId),
   );
@@ -86,7 +98,7 @@ export function DetailSheet({
 
   return (
     <div
-      className={`detail${sangsaengGwangye ? " detail--sangsaeng" : ""}${jamongSalguClub ? " detail--jamong" : ""}${open ? " is-open" : ""}`}
+      className={`detail${sangsaengGwangye ? " detail--sangsaeng" : ""}${jamongSalguClub ? " detail--jamong" : ""}${shining ? " detail--shining" : ""}${ghostBookstore ? " detail--ghost-bookstore" : ""}${open ? " is-open" : ""}`}
     >
       <div className="detail__scrim" onClick={onClose} />
       <div className="detail__ground">
@@ -116,7 +128,11 @@ export function DetailSheet({
             ? { "data-album-design": "sangsaeng" }
             : jamongSalguClub
               ? { "data-album-design": "jamong" }
-              : {})}
+              : shining
+                ? { "data-album-design": "shining" }
+                : ghostBookstore
+                  ? { "data-album-design": "ghost-bookstore" }
+                : {})}
         >
           <div className="detail__body">
             {sangsaengGwangye && (
@@ -125,8 +141,14 @@ export function DetailSheet({
             {jamongSalguClub && (
               <p className="detail__jamong-kicker">a club for tomorrow</p>
             )}
+            {shining && (
+              <p className="detail__shining-kicker">youth trilogy / final chorus</p>
+            )}
+            {ghostBookstore && (
+              <p className="detail__ghost-bookstore-kicker">after midnight / seven shelves</p>
+            )}
             <h1
-              className={`detail__title${sangsaengGwangye ? " detail__title--sangsaeng" : ""}${jamongSalguClub ? " detail__title--jamong" : ""}`}
+              className={`detail__title${sangsaengGwangye ? " detail__title--sangsaeng" : ""}${jamongSalguClub ? " detail__title--jamong" : ""}${shining ? " detail__title--shining" : ""}${ghostBookstore ? " detail__title--ghost-bookstore" : ""}`}
             >
               {sangsaengGwangye ? (
                 <>
@@ -138,6 +160,16 @@ export function DetailSheet({
                   <span>자몽</span>
                   <span>살구</span>
                   <span>클럽</span>
+                </>
+              ) : shining ? (
+                <>
+                  <span>shining</span>
+                  <span>.</span>
+                </>
+              ) : ghostBookstore ? (
+                <>
+                  <span>유령</span>
+                  <span>서점</span>
                 </>
               ) : (
                 album.title
@@ -173,6 +205,26 @@ export function DetailSheet({
                   <li>손 내밀기</li>
                   <li>곁에 있기</li>
                   <li>내일로 가기</li>
+                </ol>
+              </section>
+            )}
+            {shining && (
+              <section className="detail__shining-note" aria-label="앨범의 중심 생각">
+                <p>한 번 더, 함께 빛나기 위해 내는 합주.</p>
+                <ol aria-label="앨범의 흐름">
+                  <li>타오르기</li>
+                  <li>흔들리기</li>
+                  <li>함께 빛나기</li>
+                </ol>
+              </section>
+            )}
+            {ghostBookstore && (
+              <section className="detail__ghost-bookstore-note" aria-label="앨범의 중심 생각">
+                <p>잊힌 문장을 찾듯, 우리는 서로의 안쪽을 더듬는다.</p>
+                <ol aria-label="앨범의 흐름">
+                  <li>불빛</li>
+                  <li>흔들림</li>
+                  <li>항해</li>
                 </ol>
               </section>
             )}
@@ -221,6 +273,18 @@ export function DetailSheet({
               <ol className="detail__tracks" aria-label="수록곡">
                 {album.tracks.map((track, index) => {
                   const videoId = normalizeYouTubeVideoId(track.youtubeVideoId);
+                  const hasNote = Boolean(track.definition.trim());
+                  const expanded = expandedTrackId === track.id;
+                  const noteId = `track-note-${track.id}`;
+                  const canInteract = Boolean(videoId) || hasNote;
+
+                  const trackActionLabel = videoId
+                    ? hasNote
+                      ? `${track.title} 재생 및 곡 메모 ${expanded ? "닫기" : "열기"}`
+                      : `${track.title} 재생`
+                    : hasNote
+                      ? `${track.title} 곡 메모 ${expanded ? "닫기" : "열기"}`
+                      : `${track.title} — YouTube 영상과 곡 메모 미등록`;
 
                   return (
                     <li
@@ -230,13 +294,18 @@ export function DetailSheet({
                       <button
                         type="button"
                         className="detail__track"
-                        disabled={!videoId}
-                        onClick={() => startPlayback(track)}
-                        aria-label={
-                          videoId
-                            ? `${track.title} 재생`
-                            : `${track.title} — YouTube 영상 미등록`
-                        }
+                        disabled={!canInteract}
+                        onClick={() => {
+                          if (hasNote) {
+                            setExpandedTrackId((current) =>
+                              current === track.id ? null : track.id,
+                            );
+                          }
+                          if (videoId) startPlayback(track);
+                        }}
+                        aria-label={trackActionLabel}
+                        aria-expanded={hasNote ? expanded : undefined}
+                        aria-controls={hasNote ? noteId : undefined}
                       >
                         <span className="detail__track-no">{String(index + 1).padStart(2, "0")}</span>
                         <span className="detail__track-title">
@@ -245,6 +314,11 @@ export function DetailSheet({
                         </span>
                         <span className="detail__track-length">{track.length}</span>
                       </button>
+                      {hasNote && expanded && (
+                        <p id={noteId} className="detail__track-note">
+                          {track.definition}
+                        </p>
+                      )}
                     </li>
                   );
                 })}
@@ -302,6 +376,16 @@ export function DetailSheet({
             {jamongSalguClub && (
               <p className="detail__jamong-ticket" aria-hidden="true">
                 ticket / tomorrow
+              </p>
+            )}
+            {shining && (
+              <p className="detail__shining-stamp" aria-hidden="true">
+                we are the light
+              </p>
+            )}
+            {ghostBookstore && (
+              <p className="detail__ghost-bookstore-stamp" aria-hidden="true">
+                return by dawn
               </p>
             )}
             <div className="detail__frame detail__frame--back" aria-hidden="true">

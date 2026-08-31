@@ -356,6 +356,135 @@
   background: var(--jamong-apricot);
 }
 
+/* Tokai — shining.: an all-together encore in electric stage light. */
+.track-card--shining {
+  --shining-night: #10182d;
+  --shining-lime: #d6ff39;
+  --shining-sky: #7fc8ff;
+  --shining-paper: #f6f7ed;
+  border-color: rgba(214, 255, 57, 0.7);
+  background: var(--shining-night);
+}
+
+.track-card--shining .track-card__artwrap {
+  background: var(--shining-night);
+}
+
+.track-card--shining .track-card__artwrap::after {
+  position: absolute;
+  inset: 0;
+  z-index: 1;
+  background:
+    linear-gradient(124deg, transparent 0 43%, rgba(214, 255, 57, 0.42) 43.4% 44%, transparent 44.4% 100%),
+    radial-gradient(circle at 84% 15%, rgba(127, 200, 255, 0.78) 0 3px, transparent 3.5px),
+    radial-gradient(circle at 78% 24%, rgba(214, 255, 57, 0.84) 0 8px, transparent 8.5px),
+    linear-gradient(to top, rgba(16, 24, 45, 0.64), transparent 28%);
+  content: "";
+}
+
+.track-card--shining .track-card__head,
+.track-card--shining .track-card__foot {
+  color: var(--shining-paper);
+  background: var(--shining-night);
+}
+
+.track-card--shining .track-card__head {
+  border-color: rgba(214, 255, 57, 0.34);
+}
+
+.track-card--shining .track-card__title {
+  color: var(--shining-lime);
+  letter-spacing: -0.045em;
+}
+
+.track-card--shining .track-card__byline,
+.track-card--shining .track-card__year,
+.track-card--shining .track-card__foot,
+.track-card--shining .track-card__len {
+  color: #b8c6d6;
+}
+
+.track-card--shining .track-card__artist:hover,
+.track-card--shining .track-card__artist:focus-visible {
+  color: var(--shining-sky);
+}
+
+.track-card--shining .track-card__ordinal {
+  color: var(--shining-night);
+  background: var(--shining-lime);
+}
+
+/* 유령서점 — 유령서점: an after-hours shelf with a borrowed bookmark. */
+.track-card--ghost-bookstore {
+  --ghost-night: #111a2b;
+  --ghost-paper: #e8dfc7;
+  --ghost-gold: #e9ae55;
+  --ghost-blue: #86b7cb;
+  border-color: rgba(232, 223, 199, 0.5);
+  background: var(--ghost-night);
+}
+
+.track-card--ghost-bookstore .track-card__artwrap {
+  background: var(--ghost-night);
+}
+
+.track-card--ghost-bookstore .track-card__artwrap::after {
+  position: absolute;
+  inset: 0;
+  z-index: 1;
+  background:
+    linear-gradient(90deg, transparent 0 8%, rgba(232, 223, 199, 0.7) 8.3% 8.7%, transparent 9% 100%),
+    linear-gradient(90deg, transparent 0 20%, rgba(233, 174, 85, 0.68) 20.3% 20.8%, transparent 21.1% 100%),
+    linear-gradient(90deg, transparent 0 72%, rgba(134, 183, 203, 0.72) 72.3% 72.9%, transparent 73.2% 100%),
+    linear-gradient(to top, rgba(17, 26, 43, 0.72), transparent 32%);
+  content: "";
+}
+
+.track-card--ghost-bookstore .track-card__artwrap::before {
+  position: absolute;
+  top: 0;
+  right: clamp(14px, 12%, 48px);
+  z-index: 2;
+  width: clamp(16px, 12%, 42px);
+  height: 48%;
+  border-inline: 1px solid rgba(17, 26, 43, 0.55);
+  background: var(--ghost-gold);
+  clip-path: polygon(0 0, 100% 0, 100% 91%, 50% 100%, 0 91%);
+  content: "";
+}
+
+.track-card--ghost-bookstore .track-card__head,
+.track-card--ghost-bookstore .track-card__foot {
+  color: var(--ghost-paper);
+  background: var(--ghost-night);
+}
+
+.track-card--ghost-bookstore .track-card__head {
+  border-color: rgba(232, 223, 199, 0.28);
+}
+
+.track-card--ghost-bookstore .track-card__title {
+  color: var(--ghost-gold);
+  letter-spacing: -0.055em;
+}
+
+.track-card--ghost-bookstore .track-card__byline,
+.track-card--ghost-bookstore .track-card__year,
+.track-card--ghost-bookstore .track-card__foot,
+.track-card--ghost-bookstore .track-card__len {
+  color: #aebdca;
+}
+
+.track-card--ghost-bookstore .track-card__artist:hover,
+.track-card--ghost-bookstore .track-card__artist:focus-visible {
+  color: var(--ghost-blue);
+}
+
+.track-card--ghost-bookstore .track-card__ordinal {
+  color: var(--ghost-night);
+  background: var(--ghost-paper);
+}
+
 @media (max-width: 760px) {
   .track-card__artwrap {
     min-height: 0;
