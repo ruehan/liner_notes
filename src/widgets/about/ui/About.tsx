@@ -31,27 +31,55 @@ export function About({ open, onClose }: Props) {
 
         <p className="about__head">about this archive</p>
         <h1 className="about__title">liner notes</h1>
-        <p className="about__sub">a personal music archive</p>
+        <p className="about__sub">a living archive for albums worth returning to</p>
 
         <div className="about__body">
           <p>
-            이곳의 중심 칸(카탈로그 <b>LNR-001 ~ 012</b>)은 내가 직접 고른
-            선곡이다. 곡마다 붙은 정의문은 왜 이 곡을 아카이브에 넣었는지에 대한
-            짧은 해설이다.
+            <b>liner notes</b>는 오래 머물고 싶은 앨범을 모아두는 개인 음악
+            아카이브다. 여기의 글은 정답이나 리뷰가 아니라, 한 장의 앨범과 한 곡을
+            다시 만날 때마다 남기는 작은 여백이다.
           </p>
           <p>
-            중심 칸 바깥으로 걸어가면 나오는 기록들은 아직 채워지지 않은 칸을
-            위해 절차적으로 생성된 자리표다. 벽이 끝없는 것처럼, 이 사전도 아직
-            쓰는 중이다.
+            카드는 새로고침할 때마다 다른 순서로 나타난다. 마음에 머무는 앨범을
+            열어 수록곡과 메모를 읽고, 재생 가능한 곡은 이곳에서 바로 들어볼 수
+            있다. 앨범마다 서로 다른 표정의 페이지는 그 앨범이 남긴 분위기에서
+            시작한다.
           </p>
         </div>
 
+        <ol className="about__flow" aria-label="아카이브를 읽는 순서">
+          <li>
+            <span className="about__flow-no">01</span>
+            <div>
+              <strong>발견</strong>
+              <p>벽 위의 앨범을 천천히 훑거나, 셔플로 낯선 한 장을 만난다.</p>
+            </div>
+          </li>
+          <li>
+            <span className="about__flow-no">02</span>
+            <div>
+              <strong>듣기</strong>
+              <p>앨범 안에서 수록곡과 개인적인 곡 메모를 함께 읽는다.</p>
+            </div>
+          </li>
+          <li>
+            <span className="about__flow-no">03</span>
+            <div>
+              <strong>돌아오기</strong>
+              <p>마음에 남은 앨범은 수집해 두고, 다른 날 다시 꺼내 본다.</p>
+            </div>
+          </li>
+        </ol>
+
         <ul className="about__keys">
+          <li>
+            <span>클릭</span> 앨범과 곡 메모 열기
+          </li>
           <li>
             <span>드래그</span> 벽 이동
           </li>
           <li>
-            <span>R</span> 랜덤 항목으로 이동
+            <span>R</span> 랜덤 앨범으로 이동
           </li>
           <li>
             <span>I</span> 카탈로그 인덱스
@@ -65,7 +93,7 @@ export function About({ open, onClose }: Props) {
         </ul>
 
         <div className="about__foot">
-          <span>Gmarket Sans · Light / Medium / Bold</span>
+          <span>Keep listening. Keep leaving a margin.</span>
           <button type="button" className="about__back" onClick={onClose}>
             ← 벽으로 돌아가기
           </button>

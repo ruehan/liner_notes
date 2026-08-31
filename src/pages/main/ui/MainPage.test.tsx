@@ -478,6 +478,8 @@ describe("MainPage", () => {
     await renderLoadedPage();
     fireEvent.click(screen.getByRole("button", { name: /^about/ }));
     expect(screen.getByText("about this archive")).toBeInTheDocument();
+    expect(screen.getByText("발견")).toBeInTheDocument();
+    expect(screen.getAllByText(/곡 메모/)).toHaveLength(2);
 
     fireEvent.click(screen.getByRole("button", { name: "← 벽으로 돌아가기" }));
     expect(screen.queryByText("about this archive")).not.toBeInTheDocument();
